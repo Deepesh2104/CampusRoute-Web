@@ -1,0 +1,40 @@
+.hero {
+  max-width: 42rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  text-align: center;
+  color: var(--cr-tx);
+}
+
+.lead {
+  font-size: 1.25rem;
+  margin: 1rem 0;
+}
+
+.sub {
+  color: var(--cr-copy);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--cr-line);
+  color: var(--cr-tx);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: linear-gradient(120deg, var(--cr-v), var(--cr-c));
+  border: none;
+}

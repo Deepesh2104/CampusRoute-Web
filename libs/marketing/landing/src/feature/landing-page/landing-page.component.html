@@ -1,0 +1,443 @@
+<div class="bgfx" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header>
+  <div class="nav">
+    <a class="logo" href="#top"><i></i>CampusRoute AI</a>
+    <nav aria-label="Main">
+      <a href="#journey">Journey</a>
+      <a href="#sim">Simulator</a>
+      <a href="#why">Why trust us</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn p s" href="#join">Get early access</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero" #hero>
+    <div class="wrap hg">
+      <div>
+        <h1>
+          Pick the right degree. <span class="grad">Know the real cost.</span> Land
+          the job.
+        </h1>
+        <p class="lead">
+          CampusRoute AI connects college choice, true cost, family budget,
+          scholarships, skills and interviews in one honest, consent-controlled
+          journey.
+        </p>
+        <div class="cta">
+          <a class="btn p" href="#sim">Try the cost simulator</a>
+          <a class="btn" href="#journey">Explore the journey</a>
+        </div>
+      </div>
+      <div class="stage" #stage aria-hidden="true">
+        <div class="ring"></div>
+        <div class="fl f1" data-d="18">
+          <small>Full-course cost · B.Tech</small>
+          <span class="amt">₹18.4 lakh</span>
+          <div class="mb">
+            <i style="flex: 9; background: var(--v)"></i>
+            <i style="flex: 4; background: var(--c)"></i>
+            <i style="flex: 3; background: var(--a)"></i>
+            <i style="flex: 1.5; background: var(--r)"></i>
+          </div>
+        </div>
+        <div class="fl f2" data-d="-26">
+          <small>Scholarship matches</small>
+          <span class="amt">3 found</span>
+          <div class="ck">
+            <s>✓</s>Merit aid · verified
+          </div>
+          <div class="ck">
+            <s>✓</s>State scheme · deadline in 12 days
+          </div>
+        </div>
+        <div class="fl f3" data-d="12">
+          <small>Your roadmap</small>
+          <span class="amt">Backend dev</span>
+          <div class="mb">
+            <i style="flex: 6; background: var(--g)"></i>
+            <i
+              style="flex: 4; background: rgba(255, 255, 255, 0.15)"
+            ></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mq" aria-hidden="true">
+    <div>
+      @for (label of marqueeLabels; track $index) {
+        <span>{{ label }}</span>
+      }
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="stats rv">
+        <div class="st">
+          <b data-n="68">0</b><span>capabilities in the long-term vision</span>
+        </div>
+        <div class="st">
+          <b data-n="4">0</b><span>stages: choose, fund, build, get hired</span>
+        </div>
+        <div class="st">
+          <b data-n="100" data-s="%">0</b
+          ><span>of critical numbers carry a source and date</span>
+        </div>
+        <div class="st">
+          <b data-n="0">0</b
+          ><span>pay-to-rank placements. Sponsors are labelled</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <div class="wrap">
+      <div class="hd rv">
+        <h2>One journey. <span class="grad">Four stages.</span></h2>
+        <p>Tap a stage to see what you get.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Journey stages">
+        @for (tab of journeyTabs; track tab.title; let i = $index) {
+          <button
+            type="button"
+            class="tab"
+            role="tab"
+            [attr.aria-selected]="journeyIndex === i"
+            (click)="selectJourney(i)"
+          >
+            {{ i + 1 }}. {{ tab.title }}
+          </button>
+        }
+      </div>
+      <div
+        #journeyPanel
+        class="panel"
+        role="tabpanel"
+        [style.animation]="panelAnimation"
+      >
+        @if (activeJourney; as tab) {
+          <div>
+            <h3>{{ tab.title }}</h3>
+            <p>{{ tab.description }}</p>
+          </div>
+          <div class="mock">
+            @for (row of tab.rows; track $index) {
+              <div class="row">
+                <span>{{ row.label }}</span>
+                @switch (row.kind) {
+                  @case ('chip') {
+                    <span [class]="chipClass(row.chip)">{{
+                      chipLabel(row.chip)
+                    }}</span>
+                  }
+                  @case ('bold') {
+                    <b>{{ row.text }}</b>
+                  }
+                  @case ('progress') {
+                    <div class="pb">
+                      <i [style.width.%]="row.widthPercent"></i>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="sim">
+    <div class="wrap">
+      <div class="hd rv">
+        <h2>The fee sheet is <span class="grad">not the full bill.</span></h2>
+        <p>
+          Drag, tap and stress-test. See the total, where the money goes and
+          whether your family’s budget holds.
+        </p>
+      </div>
+      <div class="sim rv">
+        <div>
+          <div class="lb"><span>Programme</span></div>
+          <div class="seg">
+            @for (prog of programOptions; track prog.key) {
+              <button
+                type="button"
+                [attr.aria-pressed]="program === prog.key"
+                (click)="setProgram(prog.key)"
+              >
+                {{ prog.label }}
+              </button>
+            }
+          </div>
+          <div class="tgs" style="margin-top: 14px">
+            <button
+              type="button"
+              class="tg"
+              [attr.aria-pressed]="hostel"
+              (click)="toggleHostel()"
+            >
+              Hostel and mess
+            </button>
+            <button
+              type="button"
+              class="tg"
+              [attr.aria-pressed]="laptop"
+              (click)="toggleLaptop()"
+            >
+              New laptop
+            </button>
+          </div>
+          <div class="lb">
+            <label for="rise">Yearly fee rise</label
+            ><span>{{ sim.risePercent }}%</span>
+          </div>
+          <input
+            id="rise"
+            type="range"
+            min="0"
+            max="12"
+            [value]="rise"
+            (input)="onRiseInput($event)"
+          />
+          <div class="lb">
+            <label for="bud">Family can fund</label
+            ><span>{{ budgetLabel }}</span>
+          </div>
+          <input
+            id="bud"
+            type="range"
+            min="0"
+            max="3000000"
+            step="50000"
+            [value]="budget"
+            (input)="onBudgetInput($event)"
+          />
+          <div class="lb"><span>Stress-test</span></div>
+          <div class="tgs">
+            <button
+              type="button"
+              class="tg rk"
+              [attr.aria-pressed]="stressFees"
+              (click)="toggleStressFees()"
+            >
+              Fees rise 8% more
+            </button>
+            <button
+              type="button"
+              class="tg rk"
+              [attr.aria-pressed]="stressIncome"
+              (click)="toggleStressIncome()"
+            >
+              Income drops 30%
+            </button>
+          </div>
+        </div>
+        <div class="out">
+          <small style="color: var(--mu)">Estimated full-course cost</small>
+          <div class="tot" aria-live="polite">{{ totalLabel }}</div>
+          <small style="color: var(--mu)"
+            >First year: {{ firstYearLabel }}</small
+          >
+          <div class="dn">
+            <div
+              class="donut"
+              [style.background]="sim.donutGradient"
+            ></div>
+            <ul class="lg">
+              @for (line of sim.lines; track line.label) {
+                <li>
+                  <span
+                    ><i [style.background]="line.color"></i
+                    >{{ line.label }}</span
+                  >
+                  <b>{{ fmtLakh(line.amount) }}</b>
+                </li>
+              }
+            </ul>
+          </div>
+          <div class="lb" style="margin-top: 0">
+            <span>Budget covers</span><span>{{ sim.coveragePercent }}%</span>
+          </div>
+          <div class="meter">
+            <i
+              [style.width.%]="sim.coveragePercent"
+              [style.background]="sim.meterColor"
+            ></i>
+          </div>
+          <div
+            class="vd"
+            role="status"
+            [class.bad]="sim.verdictBad"
+          >
+            {{ sim.verdictText }}
+          </div>
+          <p class="fine">
+            Sample numbers for demonstration. Not a lender quote or financial
+            advice. Real CampusRoute figures show their source, date and range.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="wrap">
+      <div class="hd rv">
+        <h2>Built so you can <span class="grad">check our work.</span></h2>
+      </div>
+      <div class="bento rv">
+        <div class="bx w" #bentoTile>
+          <div class="ic">🔎</div>
+          <h3>Evidence on every fact</h3>
+          <p>
+            Fees, deadlines, accreditation and salaries show their source, date
+            and confidence. Conflicts are shown, never hidden.
+          </p>
+        </div>
+        <div class="bx w" #bentoTile>
+          <div class="ic">🔐</div>
+          <h3>You decide what a college sees</h3>
+          <div class="sw">
+            <span>Exam rank</span>
+            <button
+              type="button"
+              [attr.aria-pressed]="consentExam"
+              aria-label="Share exam rank"
+              (click)="toggleConsent('exam')"
+            ></button>
+          </div>
+          <div class="sw">
+            <span>Household budget</span>
+            <button
+              type="button"
+              [attr.aria-pressed]="consentBudget"
+              aria-label="Share household budget"
+              (click)="toggleConsent('budget')"
+            ></button>
+          </div>
+          <div class="sw">
+            <span>Saved shortlist</span>
+            <button
+              type="button"
+              [attr.aria-pressed]="consentShortlist"
+              aria-label="Share saved shortlist"
+              (click)="toggleConsent('shortlist')"
+            ></button>
+          </div>
+          <p class="shn">{{ consentSummary }}</p>
+        </div>
+        @for (tile of bentoTiles; track tile.title) {
+          <div class="bx" #bentoTile>
+            <div class="ic">{{ tile.icon }}</div>
+            <h3>{{ tile.title }}</h3>
+            <p>{{ tile.text }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="not rv">
+        <h2>What CampusRoute is not</h2>
+        <ul>
+          @for (item of notList; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="hd rv"><h2>Questions families ask</h2></div>
+      @for (faq of faqs; track faq.q) {
+        <details>
+          <summary>{{ faq.q }}</summary>
+          <p>{{ faq.a }}</p>
+        </details>
+      }
+    </div>
+  </section>
+
+  <section id="join">
+    <div class="wrap">
+      <div class="fin rv">
+        <h2>Choose with the <span class="grad">full picture.</span></h2>
+        <p>
+          Join early access and help us test the simulator on real decisions.
+        </p>
+        <form novalidate (ngSubmit)="submitJoin($event)">
+          <label for="em" style="position: absolute; left: -9999px"
+            >Email address</label
+          >
+          <input
+            id="em"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            [(ngModel)]="joinEmail"
+          />
+          <button class="btn p" type="submit">Request access</button>
+        </form>
+        <div
+          class="msg"
+          role="status"
+          [class.ok]="joinMsgOk"
+          [class.er]="joinMsgEr"
+        >
+          {{ joinMsg }}
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-ft">
+  <div class="wrap">
+    <div class="ft-top">
+      <div class="ft-brand">
+        <a class="logo" href="#top"><i></i>CampusRoute AI</a>
+        <p class="ft-tagline">
+          Honest college and career planning for Indian students and families —
+          cost, consent and outcomes in one place.
+        </p>
+        <a class="btn p s ft-cta" href="#join">Get early access</a>
+      </div>
+      <nav class="ft-col" aria-label="Product">
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#journey">Journey</a></li>
+          <li><a href="#sim">Cost simulator</a></li>
+          <li><a href="#why">Why trust us</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <nav class="ft-col" aria-label="Explore">
+        <h3>Explore</h3>
+        <ul>
+          <li><a href="#top">Back to top</a></li>
+          <li><a href="#join">Join early access</a></li>
+          <li><a href="#sim">Try the simulator</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="ft-bar">
+      <span class="ft-copy">© 2026 CampusRoute AI. All rights reserved.</span>
+      <p class="ft-legal">
+        Proposed planning product. Figures here are illustrative — not legal,
+        financial, immigration or admission advice. No outcome is guaranteed.
+      </p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,10 @@
+{
+  "name": "platform-shell",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/platform/shell/src",
+  "projectType": "library",
+  "tags": [ "scope:platform", "type:shell" ],
+  "targets": {
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

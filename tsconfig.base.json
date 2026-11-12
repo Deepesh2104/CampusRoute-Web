@@ -1,0 +1,34 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2022",
+    "module": "esnext",
+    "lib": ["es2022", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "strict": true,
+    "paths": {
+      "@campusroute/shared-ui": ["libs/shared/ui/src/index.ts"],
+      "@campusroute/shared-models": ["libs/shared/models/src/index.ts"],
+      "@campusroute/shared-util": ["libs/shared/util/src/index.ts"],
+      "@campusroute/core-auth": ["libs/core/auth/src/index.ts"],
+      "@campusroute/core-consent": ["libs/core/consent/src/index.ts"],
+      "@campusroute/core-http": ["libs/core/http/src/index.ts"],
+      "@campusroute/core-config": ["libs/core/config/src/index.ts"],
+      "@campusroute/marketing-landing": ["libs/marketing/landing/src/index.ts"],
+      "@campusroute/domains-discover": ["libs/domains/discover/src/index.ts"],
+      "@campusroute/domains-finance": ["libs/domains/finance/src/index.ts"],
+      "@campusroute/domains-profile": ["libs/domains/profile/src/index.ts"],
+      "@campusroute/platform-shell": ["libs/platform/shell/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

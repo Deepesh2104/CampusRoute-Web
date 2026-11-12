@@ -1,0 +1,10 @@
+{
+  "name": "domains-finance",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/finance/src",
+  "projectType": "library",
+  "tags": [ "scope:domain-finance", "type:domain" ],
+  "targets": {
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

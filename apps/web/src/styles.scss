@@ -1,0 +1,17 @@
+@use '../../../libs/shared/ui/src/styles/tokens';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--cr-bg);
+  color: var(--cr-tx);
+  font-family: var(--cr-font-body);
+  -webkit-font-smoothing: antialiased;
+}

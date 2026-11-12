@@ -1,0 +1,10 @@
+{
+  "name": "core-consent",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/consent/src",
+  "projectType": "library",
+  "tags": [ "scope:core", "type:consent" ],
+  "targets": {
+    "lint": { "executor": "@nx/eslint:lint" }
+  }
+}

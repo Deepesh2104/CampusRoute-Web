@@ -1,0 +1,33 @@
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--cr-line);
+}
+
+.logo {
+  font-weight: 800;
+  color: var(--cr-tx);
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+nav a {
+  color: var(--cr-copy);
+  text-decoration: none;
+}
+
+.cta {
+  color: var(--cr-tx);
+  font-weight: 600;
+}
+
+main {
+  min-height: 70vh;
+}
