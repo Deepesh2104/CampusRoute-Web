@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nx serve web",
     "build": "nx build web",
+    "vercel-build": "nx build web --configuration=production",
     "test": "nx run-many -t test --all",
     "lint": "nx run-many -t lint --all",
     "scaffold:libs": "powershell -ExecutionPolicy Bypass -File tools/scaffold-libs.ps1"

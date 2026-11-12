@@ -50,10 +50,22 @@ Each domain lib uses:
 
 ## API proxy
 
-`apps/web/proxy.conf.json` → `https://localhost:5001/v1` when .NET API runs locally.
+`apps/web/proxy.conf.json` → `https://localhost:5001/v1` when .NET API runs locally (dev only).
+
+## Deploy (Vercel)
+
+In the **Root Directory** step, choose **`CampusRoute-Web` (root)** — not `apps`, `libs`, or `legacy`.
+
+| Setting | Value |
+|---------|--------|
+| Build Command | `npm run vercel-build` |
+| Output Directory | `dist/apps/web/browser` (must include `browser/`) |
+| Framework | Prefer **Other** if preview 404 |
+
+SPA rewrites live in `vercel.json`. Full FAQ: [CampusRoute-Platform/Docs/architecture/client/deploy-vercel.md](../CampusRoute-Platform/Docs/architecture/client/deploy-vercel.md).
 
 ## Next steps
 
-1. Port sections from `legacy/CampusRoute AI – Landing page.html` into `libs/marketing/landing`
-2. Implement `core-auth` and wire `/auth/*`
-3. Add `domains-finance` cost simulator
+1. Implement `core-auth` and wire `/auth/*`
+2. Add `domains-finance` cost simulator (logged-in app)
+3. Wire waitlist form to API
