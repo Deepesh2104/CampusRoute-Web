@@ -1,11 +1,19 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { DECISION_SCORE, DEMO_CAMPUS_OVERVIEW } from '../../domain/demo-overview.data';
+import { formatLpaRange } from '../../domain/format-money';
 
 @Component({
   selector: 'cr-dashboard-page',
-  template: `
-    <h1>Learner dashboard</h1>
-    <p>Shell route — wire Discover, Finance, and journey nav here.</p>
-  `,
+  imports: [RouterLink],
+  templateUrl: './dashboard-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPageComponent {}
+export class DashboardPageComponent {
+  readonly overview = DEMO_CAMPUS_OVERVIEW;
+  readonly decisionScore = DECISION_SCORE;
+
+  formatRange(min: number, max: number): string {
+    return formatLpaRange(min, max);
+  }
+}

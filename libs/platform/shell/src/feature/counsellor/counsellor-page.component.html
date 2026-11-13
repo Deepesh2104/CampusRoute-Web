@@ -1,0 +1,200 @@
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <cr-section-eyebrow>Grounded AI counsellor · MOD-035</cr-section-eyebrow>
+    <h1 class="cr-pa-page-title-xl">
+      Ask a better<br />
+      <span class="cr-pa-accent-emerald">next question.</span>
+    </h1>
+    <p class="cr-pa-lede">
+      Aarav’s counsellor only sees the curated CampusRoute dataset. It cites the rows it uses, marks estimates, and
+      never pretends a salary is a guarantee.
+    </p>
+  </div>
+
+  <section class="cr-pa-grid-12 cr-pa-section">
+    <article class="cr-pa-card cr-pa-span-8 cr-pa-chat-card" data-testid="counsellor-chat-card">
+      <div class="cr-pa-chat-header">
+        <div class="cr-pa-chat-header__brand">
+          <span class="cr-pa-chat-header__bot" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8V4H8" />
+              <rect x="4" y="10" width="16" height="10" rx="2" />
+              <path d="M9 16v.01M15 16v.01" />
+            </svg>
+          </span>
+          <div>
+            <p class="cr-pa-chat-header__title" data-testid="counsellor-status">CampusRoute counsellor</p>
+            <p class="cr-pa-chat-header__sub">
+              <span class="cr-pa-chat-header__dot" aria-hidden="true"></span>
+              grounded on seeded data
+            </p>
+          </div>
+        </div>
+        <span class="cr-pa-grounding-badge" data-testid="grounding-badge">Sources on</span>
+      </div>
+
+      <div class="cr-pa-chat-body cr-pa-chat-body--tall" data-testid="chat-message-list">
+        @if (messages().length === 0) {
+          <div class="cr-pa-chat-row">
+            <span class="cr-pa-chat-avatar cr-pa-chat-avatar--bot" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 8V4H8" />
+                <rect x="4" y="10" width="16" height="10" rx="2" />
+              </svg>
+            </span>
+            <div class="cr-pa-chat-bubble cr-pa-chat-bubble--assistant" data-testid="counsellor-welcome-message">
+              Hi Aarav — I can help you compare college cost, placement signals, and career fit. What decision feels
+              fuzzy right now?
+            </div>
+          </div>
+        }
+
+        @for (m of messages(); track m.id) {
+          <div
+            class="cr-pa-chat-row"
+            [class.cr-pa-chat-row--user]="m.role === 'user'"
+            [attr.data-testid]="'chat-message-' + m.role + '-' + m.id"
+          >
+            <span
+              class="cr-pa-chat-avatar"
+              [class.cr-pa-chat-avatar--user]="m.role === 'user'"
+              [class.cr-pa-chat-avatar--bot]="m.role === 'assistant'"
+              aria-hidden="true"
+            >
+              @if (m.role === 'user') {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              } @else {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 8V4H8" />
+                  <rect x="4" y="10" width="16" height="10" rx="2" />
+                </svg>
+              }
+            </span>
+            <div
+              class="cr-pa-chat-bubble"
+              [class.cr-pa-chat-bubble--user]="m.role === 'user'"
+              [class.cr-pa-chat-bubble--assistant]="m.role === 'assistant'"
+            >
+              <p [innerHTML]="formatMsg(m.content)"></p>
+              @if (m.role === 'assistant' && m.citations.length) {
+                <div class="cr-pa-citation-block">
+                  <p class="cr-pa-citation-block__label">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    Used in this answer
+                  </p>
+                  <div class="cr-pa-citation-block__tags">
+                    @for (c of m.citations; track c) {
+                      <span class="cr-pa-citation-tag" data-testid="chat-citation-badge">{{ c }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <form class="cr-pa-chat-form" data-testid="counsellor-chat-form" (submit)="onSubmit($event)">
+        <input
+          type="text"
+          class="cr-pa-input cr-pa-input--chat"
+          placeholder="Ask about cost, fit, or placement evidence…"
+          data-testid="counsellor-message-input"
+          [value]="draft()"
+          (input)="draft.set($any($event.target).value)"
+          [disabled]="sending()"
+        />
+        <button
+          type="submit"
+          class="cr-pa-btn cr-pa-btn--send"
+          data-testid="counsellor-send-button"
+          [disabled]="sending() || !draft().trim()"
+        >
+          @if (sending()) {
+            <span class="cr-pa-btn__spinner" aria-hidden="true"></span>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m22 2-7 20-4-9-9-4Z" />
+              <path d="M22 2 11 13" />
+            </svg>
+          }
+          <span class="cr-pa-btn__send-label">Send</span>
+        </button>
+      </form>
+    </article>
+
+    <aside class="cr-pa-counsellor-aside cr-pa-span-4">
+      <article class="cr-pa-card cr-pa-card--amber" data-testid="suggested-prompts-card">
+        <div class="cr-pa-card__inner">
+          <cr-section-eyebrow>Try a grounded prompt</cr-section-eyebrow>
+          <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Start with a decision</h2>
+          <div class="cr-pa-prompt-list">
+            @for (p of presets; track p) {
+              <button
+                type="button"
+                class="cr-pa-prompt-btn"
+                (click)="submit(p)"
+                [disabled]="sending()"
+                [attr.data-testid]="promptTestId(p)"
+              >
+                <span>{{ p }}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="m12 3 1.9 5.8H20l-4.7 3.4 1.8 5.8L12 14.8 6.9 18l1.8-5.8L4 8.8h6.1z" />
+                </svg>
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="cr-pa-card" data-testid="counsellor-trust-card">
+        <div class="cr-pa-card__inner">
+          <cr-section-eyebrow>How to read it</cr-section-eyebrow>
+          <div class="cr-pa-trust-rows">
+            <div class="cr-pa-trust-row" data-testid="trust-row-grounded">
+              <span class="cr-pa-icon-emerald" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <path d="M22 4 12 14.01l-3-3" />
+                </svg>
+              </span>
+              <div>
+                <p class="cr-pa-trust-row__title">Grounded</p>
+                <p class="cr-pa-trust-row__text">Answers use only seeded college and career rows.</p>
+              </div>
+            </div>
+            <div class="cr-pa-trust-row" data-testid="trust-row-cited">
+              <span class="cr-pa-icon-emerald" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+              </span>
+              <div>
+                <p class="cr-pa-trust-row__title">Cited</p>
+                <p class="cr-pa-trust-row__text">Source labels show what informed the answer.</p>
+              </div>
+            </div>
+            <div class="cr-pa-trust-row" data-testid="trust-row-estimate-aware">
+              <span class="cr-pa-icon-emerald" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m12 3 1.9 5.8H20l-4.7 3.4 1.8 5.8L12 14.8 6.9 18l1.8-5.8L4 8.8h6.1z" />
+                </svg>
+              </span>
+              <div>
+                <p class="cr-pa-trust-row__title">Estimate-aware</p>
+                <p class="cr-pa-trust-row__text">Grounded / estimate-aware</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </aside>
+  </section>
+</div>

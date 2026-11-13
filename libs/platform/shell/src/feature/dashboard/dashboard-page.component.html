@@ -1,0 +1,153 @@
+<div class="cr-pa-home">
+  <section class="cr-pa-hero">
+    <div class="cr-pa-hero__ring-a" aria-hidden="true"></div>
+    <div class="cr-pa-hero__ring-b" aria-hidden="true"></div>
+    <div class="cr-pa-hero__body">
+      <div class="cr-pa-hero__meta">
+        <span class="cr-pa-hero__badge" data-testid="demo-mode-badge">Decision workspace · demo mode</span>
+        <span class="cr-pa-hero__meta-note" data-testid="today-label">Updated for 2025 intake</span>
+      </div>
+      <h1>
+        Make the next<br />
+        <span class="accent">four years count.</span>
+      </h1>
+      <p class="cr-pa-hero__lede">
+        CampusRoute helps families compare the real cost, fit, and first career signal of an engineering choice —
+        before the application fee.
+      </p>
+      <div class="cr-pa-hero__actions">
+        <a class="cr-pa-btn cr-pa-btn--amber" routerLink="/app/explore" data-testid="hero-explore-link">
+          Explore colleges →
+        </a>
+        <a class="cr-pa-btn cr-pa-btn--ghost" routerLink="/app/counsellor" data-testid="hero-counsellor-link">
+          Ask the counsellor ✦
+        </a>
+      </div>
+    </div>
+    <div class="cr-pa-hero__metrics">
+      <div>
+        <div class="cr-pa-metric__value" data-testid="hero-colleges-metric">{{ overview.colleges.length }}</div>
+        <div class="cr-pa-metric__label">colleges</div>
+      </div>
+      <div>
+        <div class="cr-pa-metric__value" data-testid="hero-careers-metric">{{ overview.careers.length }}</div>
+        <div class="cr-pa-metric__label">career paths</div>
+      </div>
+      <div>
+        <div class="cr-pa-metric__value" data-testid="hero-guide-metric">1</div>
+        <div class="cr-pa-metric__label">grounded guide</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cr-pa-grid-12">
+    <article class="cr-pa-card cr-pa-span-7" data-testid="learner-profile-card">
+      <div class="cr-pa-card__inner">
+        <p class="cr-pa-eyebrow">Your route so far</p>
+        <div class="cr-pa-profile-row">
+          <div>
+            <h2 class="cr-pa-section-heading" data-testid="learner-name">{{ overview.learner.name }}</h2>
+            <p class="cr-pa-muted" data-testid="learner-profile-summary">
+              {{ overview.learner.class_level }} · {{ overview.learner.stream }} · {{ overview.learner.city }}
+            </p>
+            <p class="cr-pa-muted" style="margin-top: 0.5rem">{{ overview.learner.goal }}</p>
+          </div>
+          <div class="cr-pa-goal" data-testid="profile-goal-card">
+            <p class="cr-pa-goal__label">Your north star</p>
+            <p class="cr-pa-goal__text">Strong fit, sensible cost</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="cr-pa-card cr-pa-card--emerald cr-pa-span-5" data-testid="decision-score-card">
+      <div class="cr-pa-card__inner">
+        <p class="cr-pa-eyebrow">Decision snapshot</p>
+        <div class="cr-pa-score-row">
+          <div>
+            <p class="cr-pa-score" data-testid="decision-score-value">
+              {{ decisionScore }}<span>/100</span>
+            </p>
+            <p class="cr-pa-muted" style="margin-top: 0.25rem">Evidence to decision</p>
+          </div>
+          <span aria-hidden="true" style="font-size: 1.5rem; color: #047857">↗</span>
+        </div>
+        <div class="cr-pa-progress" aria-hidden="true">
+          <div class="cr-pa-progress__bar" [style.width.%]="decisionScore"></div>
+        </div>
+        <p class="cr-pa-muted" style="margin-top: 1rem; font-size: 0.75rem" data-testid="decision-score-note">
+          You have enough context to shortlist. Next: test the family affordability of two options.
+        </p>
+        <a
+          class="cr-pa-text-link"
+          routerLink="/app/money"
+          data-testid="snapshot-money-link"
+          style="margin-top: 1.25rem; display: inline-block"
+        >
+          Run money check →
+        </a>
+      </div>
+    </article>
+  </section>
+
+  <section class="cr-pa-section">
+    <div class="cr-pa-section__head">
+      <div>
+        <p class="cr-pa-eyebrow">Start with a direction</p>
+        <h2 class="cr-pa-section-heading">Three routes worth exploring</h2>
+      </div>
+      <a class="cr-pa-text-link" routerLink="/app/explore" data-testid="all-careers-link">See all comparisons →</a>
+    </div>
+    <div class="cr-pa-career-grid">
+      @for (career of overview.careers; track career.id; let i = $index) {
+        <article class="cr-pa-card cr-pa-career-card" [attr.data-testid]="'career-card-' + career.id">
+          <div class="cr-pa-card__inner">
+            <span class="cr-pa-badge" [attr.data-testid]="'career-demand-' + career.id">{{ career.demand }} demand</span>
+            <h3 [attr.data-testid]="'career-title-' + career.id">{{ career.title }}</h3>
+            <p>{{ career.tagline }}</p>
+            <p class="cr-pa-salary">{{ formatRange(career.salary_min_lpa, career.salary_max_lpa) }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="cr-pa-grid-12 cr-pa-section">
+    <article class="cr-pa-card cr-pa-span-7" data-testid="timeline-card">
+      <div class="cr-pa-card__inner">
+        <p class="cr-pa-eyebrow">Longitudinal record</p>
+        <h2 class="cr-pa-section-heading">Your decision trail</h2>
+        <div class="cr-pa-timeline">
+          @for (item of overview.timeline; track item.id) {
+            <div class="cr-pa-timeline__item" [attr.data-testid]="'timeline-item-' + item.id">
+              <span
+                class="cr-pa-timeline__dot"
+                [class.is-current]="item.status === 'current'"
+                [class.is-next]="item.status === 'next'"
+              ></span>
+              <div style="flex: 1">
+                <p class="cr-pa-timeline__label">{{ item.label }}</p>
+                <p class="cr-pa-timeline__detail">{{ item.detail }}</p>
+              </div>
+              <span class="cr-pa-timeline__date">{{ item.date }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+
+    <article class="cr-pa-card cr-pa-span-5" data-testid="next-step-card">
+      <div class="cr-pa-card__inner">
+        <p class="cr-pa-eyebrow">One useful next step</p>
+        <h2 class="cr-pa-section-heading">Stress-test the shortlist</h2>
+        <p class="cr-pa-muted">
+          A college can look affordable on paper and still feel tight month to month. Model income, savings, and EMI
+          pressure before you commit.
+        </p>
+        <a class="cr-pa-btn cr-pa-btn--emerald" routerLink="/app/money" data-testid="next-step-money-link">
+          Open True Cost &amp; ROI →
+        </a>
+      </div>
+    </article>
+  </section>
+</div>

@@ -1,0 +1,245 @@
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <cr-section-eyebrow>Planner &amp; career execution · P2 / P3</cr-section-eyebrow>
+    <h1 class="cr-pa-page-title-xl">
+      Turn a shortlist<br />
+      <span class="cr-pa-accent-emerald">into a route.</span>
+    </h1>
+    <p class="cr-pa-lede">
+      Keep the admission work, money questions, and career proof in one visible place. No spreadsheet archaeology.
+    </p>
+  </div>
+
+  <section class="cr-pa-grid-12 cr-pa-section">
+    <article class="cr-pa-card cr-pa-span-8" data-testid="application-pipeline-card">
+      <div class="cr-pa-card__inner">
+        <div class="cr-pa-section__head cr-pa-section__head--stack-sm">
+          <div>
+            <cr-section-eyebrow>Application pipeline</cr-section-eyebrow>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--lg">Aarav’s active options</h2>
+          </div>
+          <div class="cr-pa-stage-tabs">
+            @for (stage of stages; track stage) {
+              <button
+                type="button"
+                class="cr-pa-stage-tab"
+                [class.is-active]="selectedStage() === stage"
+                (click)="setStage(stage)"
+                [attr.data-testid]="'planner-stage-' + stage.toLowerCase() + '-filter'"
+              >
+                {{ stage }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="cr-pa-planner-list">
+          @for (item of filteredPlanner(); track item.college_id) {
+            @if (college(item.college_id); as c) {
+              <div class="cr-pa-planner-card" [attr.data-testid]="'planner-item-' + item.college_id">
+                <div class="cr-pa-planner-card__top">
+                  <div class="cr-pa-planner-card__identity">
+                    <span class="cr-pa-planner-card__icon" aria-hidden="true">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                        <path d="M6 12v5c0 1.1 2.7 2 6 2s6-.9 6-2v-5" />
+                      </svg>
+                    </span>
+                    <div>
+                      <p class="cr-pa-planner-card__name">{{ c.short_name }}</p>
+                      <p class="cr-pa-planner-card__city">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        {{ c.city }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="cr-pa-planner-card__status">
+                    <span class="cr-pa-badge cr-pa-badge--amber" [attr.data-testid]="'planner-status-' + c.id">{{ item.status }}</span>
+                    <select
+                      class="cr-pa-select cr-pa-select--compact"
+                      [value]="item.status"
+                      (change)="onStatusChange(item.college_id, $any($event.target).value)"
+                      [attr.data-testid]="'planner-status-select-' + c.id"
+                    >
+                      @for (stage of stages; track stage) {
+                        <option [value]="stage">{{ stage }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+                <div class="cr-pa-planner-card__foot">
+                  <span class="cr-pa-planner-card__next">
+                    <svg class="cr-pa-planner-card__clock" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    Next: <strong>{{ item.next_action }}</strong>
+                  </span>
+                  <span class="cr-pa-planner-card__stats">
+                    {{ formatLakhs(c.tuition_lakhs) }} tuition · {{ c.median_placement_lpa }}L median
+                  </span>
+                </div>
+              </div>
+            }
+          } @empty {
+            <p class="cr-pa-muted">No colleges in {{ selectedStage() }} yet — shortlist from Explore.</p>
+          }
+        </div>
+        <p class="cr-pa-planner-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+          Choose a stage to make the next action concrete.
+        </p>
+      </div>
+    </article>
+
+    <article class="cr-pa-card cr-pa-card--amber cr-pa-span-4" data-testid="scholarship-match-card">
+      <div class="cr-pa-card__inner">
+        <div class="cr-pa-section__head">
+          <div>
+            <cr-section-eyebrow>Matched for Aarav</cr-section-eyebrow>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Scholarship signals</h2>
+          </div>
+          <svg class="cr-pa-icon-amber" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="cr-pa-scholarship-list">
+          @for (s of overview.scholarships; track s.id) {
+            <div class="cr-pa-scholarship-item" [attr.data-testid]="'scholarship-card-' + s.id">
+              <div class="cr-pa-scholarship-item__head">
+                <p class="cr-pa-scholarship-item__name">{{ s.name }}</p>
+                <span class="cr-pa-scholarship-item__amount">{{ formatLakhs(s.amount_lakhs) }}</span>
+              </div>
+              <p class="cr-pa-scholarship-item__reason">{{ s.match_reason }}</p>
+              <p class="cr-pa-scholarship-item__deadline">Deadline · {{ s.deadline }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="cr-pa-grid-12 cr-pa-grid-12--dense">
+    <article class="cr-pa-card cr-pa-span-5" data-testid="career-execution-card">
+      <div class="cr-pa-card__inner">
+        <div class="cr-pa-section__head">
+          <div>
+            <cr-section-eyebrow>Career execution · P3</cr-section-eyebrow>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Skill gap, honestly</h2>
+          </div>
+          <svg class="cr-pa-icon-emerald" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            <rect x="2" y="8" width="20" height="12" rx="2" />
+          </svg>
+        </div>
+        <div class="cr-pa-skill-gaps">
+          @for (gap of overview.skill_gaps; track gap.skill) {
+            <div [attr.data-testid]="skillGapTestId(gap.skill)">
+              <div class="cr-pa-skill-gaps__head">
+                <span>{{ gap.skill }}</span>
+                <span class="cr-pa-skill-gaps__pct">{{ gap.current }}% <span class="cr-pa-skill-gaps__arrow">→</span> {{ gap.target }}%</span>
+              </div>
+              <div class="cr-pa-skill-gaps__track">
+                <div class="cr-pa-skill-gaps__fill" [style.width.%]="gap.current"></div>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="cr-pa-resume-snapshot">
+          <p class="cr-pa-resume-snapshot__title">Resume snapshot</p>
+          <p class="cr-pa-resume-snapshot__headline">{{ overview.resume.headline }}</p>
+          <div class="cr-pa-resume-snapshot__readiness">
+            <span class="cr-pa-resume-snapshot__pct">{{ overview.resume.readiness }}%</span>
+            <span class="cr-pa-resume-snapshot__label">ready for a first review</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="cr-pa-card cr-pa-span-7" data-testid="interview-prep-card">
+      <div class="cr-pa-card__inner">
+        <div class="cr-pa-section__head">
+          <div>
+            <cr-section-eyebrow>Practice loop</cr-section-eyebrow>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Interview prep, one proof at a time</h2>
+          </div>
+          <svg class="cr-pa-icon-amber" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+          </svg>
+        </div>
+        <div class="cr-pa-interview-grid">
+          @for (task of overview.interview_tasks; track task.id) {
+            <div class="cr-pa-interview-task" [attr.data-testid]="'interview-task-' + task.id">
+              <span class="cr-pa-interview-task__icon" [class.is-done]="task.done">
+                @if (task.done) {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                } @else {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                }
+              </span>
+              <p class="cr-pa-interview-task__title">{{ task.title }}</p>
+              <p class="cr-pa-interview-task__detail">{{ task.detail }}</p>
+            </div>
+          }
+        </div>
+        <p class="cr-pa-planner-hint">
+          <svg class="cr-pa-icon-emerald" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          A future mentor can review this snapshot with you.
+        </p>
+      </div>
+    </article>
+  </section>
+
+  <section class="cr-pa-grid-2 cr-pa-grid-12--dense">
+    <article class="cr-pa-card" data-testid="job-board-card">
+      <div class="cr-pa-card__inner">
+        <cr-section-eyebrow>Early ecosystem glimpse · P4</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Jobs that make skills tangible</h2>
+        <div class="cr-pa-job-list">
+          @for (job of overview.jobs; track job.id) {
+            <div class="cr-pa-job-row" [attr.data-testid]="'job-card-' + job.id">
+              <div>
+                <p class="cr-pa-job-row__role">{{ job.role }}</p>
+                <p class="cr-pa-job-row__meta">{{ job.company }} · {{ job.location }}</p>
+              </div>
+              <div class="cr-pa-job-row__aside">
+                <p class="cr-pa-job-row__salary">{{ formatJobSalary(job.salary_lpa) }}</p>
+                <p class="cr-pa-job-row__posted">{{ job.posted }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+
+    <article class="cr-pa-card" data-testid="mentor-board-card">
+      <div class="cr-pa-card__inner">
+        <cr-section-eyebrow>Mentor network · P5</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">People one step ahead</h2>
+        <div class="cr-pa-mentor-grid">
+          @for (m of overview.mentors; track m.id) {
+            <div class="cr-pa-mentor-card" [attr.data-testid]="'mentor-card-' + m.id">
+              <span class="cr-pa-mentor-card__avatar">{{ m.initials }}</span>
+              <p class="cr-pa-mentor-card__name">{{ m.name }}</p>
+              <p class="cr-pa-mentor-card__role">{{ m.role }}, {{ m.company }}</p>
+              <p class="cr-pa-mentor-card__focus">{{ m.focus }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+  </section>
+</div>

@@ -1,44 +1,30 @@
 import { Route } from '@angular/router';
+import {
+  authFeatureRoutes,
+  authGuard,
+  emailVerifiedGuard,
+  guestAuthGuard,
+} from '@campusroute/core-auth';
+import { consentPolicyGuard } from '@campusroute/core-consent';
 
 export const appRoutes: Route[] = [
   {
     path: '',
     loadChildren: () =>
-      import('@campusroute/marketing-landing').then(
-        (m) => m.marketingLandingRoutes
-      ),
+      import('@campusroute/marketing-landing').then((m) => m.marketingLandingRoutes),
   },
   {
     path: 'auth',
     loadComponent: () =>
-      import('./layouts/auth-layout/auth-layout.component').then(
-        (m) => m.AuthLayoutComponent
-      ),
-    children: [
-      {
-        path: 'login',
-        loadComponent: () =>
-          import('./feature/auth-placeholder/auth-placeholder.component').then(
-            (m) => m.AuthPlaceholderComponent
-          ),
-        data: { title: 'Sign in' },
-      },
-      {
-        path: 'sign-up',
-        loadComponent: () =>
-          import('./feature/auth-placeholder/auth-placeholder.component').then(
-            (m) => m.AuthPlaceholderComponent
-          ),
-        data: { title: 'Create account' },
-      },
-    ],
+      import('./layouts/auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
+    canActivate: [guestAuthGuard],
+    children: authFeatureRoutes,
   },
   {
     path: 'app',
     loadComponent: () =>
-      import('./layouts/learner-shell/learner-shell.component').then(
-        (m) => m.LearnerShellComponent
-      ),
+      import('./layouts/learner-shell/learner-shell.component').then((m) => m.LearnerShellComponent),
+    canActivate: [authGuard, emailVerifiedGuard, consentPolicyGuard],
     children: [
       {
         path: '',

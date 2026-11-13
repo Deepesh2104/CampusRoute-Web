@@ -1,0 +1,167 @@
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <cr-section-eyebrow>Explore &amp; compare · P1</cr-section-eyebrow>
+    <h1 class="cr-pa-page-title-xl">
+      Don’t pick a college.<br />
+      <span class="cr-pa-accent-emerald">Pick a fit.</span>
+    </h1>
+    <p class="cr-pa-lede">
+      A clear view across cost, outcomes, accreditation, and the route you’ll actually take to get in.
+    </p>
+  </div>
+
+  <section class="cr-pa-section">
+    <div class="cr-pa-section__head">
+      <div>
+        <cr-section-eyebrow>Career direction</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading">What kind of work pulls you in?</h2>
+      </div>
+      <span class="cr-pa-section-meta">Seeded 2025 signals</span>
+    </div>
+    <div class="cr-pa-career-grid">
+      @for (career of overview.careers; track career.id; let i = $index) {
+        <article
+          class="cr-pa-card cr-pa-career-card"
+          [class.cr-pa-card--highlight]="i === 0"
+          [attr.data-testid]="'explore-career-card-' + career.id"
+        >
+          <div class="cr-pa-card__inner">
+            <div class="cr-pa-section__head" style="margin: 0; align-items: flex-start">
+              <span class="cr-pa-career-index">0{{ i + 1 }}</span>
+              <span class="cr-pa-badge" [attr.data-testid]="'explore-career-demand-' + career.id">{{ career.demand }}</span>
+            </div>
+            <h3 class="cr-pa-section-heading" style="margin-top: 2rem">{{ career.title }}</h3>
+            <p>{{ career.tagline }}</p>
+            <p class="cr-pa-salary">{{ formatLpaRange(career.salary_min_lpa, career.salary_max_lpa) }}</p>
+            <div class="cr-pa-tag-row">
+              @for (skill of career.skills; track skill) {
+                <span class="cr-pa-tag" [attr.data-testid]="'explore-skill-' + career.id + '-' + skillSlug(skill)">{{
+                  skill
+                }}</span>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="cr-pa-section">
+    <div class="cr-pa-section__head">
+      <div>
+        <cr-section-eyebrow>College matrix</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading">Compare the trade-offs</h2>
+      </div>
+      <span class="cr-pa-matrix-hint">Fees are four-year tuition unless marked otherwise</span>
+    </div>
+    <div class="cr-pa-table-wrap">
+      <table class="cr-pa-table" data-testid="college-comparison-table">
+        <thead>
+          <tr>
+            <th>College</th>
+            <th>Total tuition</th>
+            <th>Median placement</th>
+            <th>Placed</th>
+            <th>Route</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (college of overview.colleges; track college.id) {
+            <tr
+              class="cr-pa-table__row"
+              [class.is-selected]="selectedId() === college.id"
+              [attr.data-testid]="'college-row-' + college.id"
+            >
+              <td>
+                <button
+                  type="button"
+                  class="cr-pa-table__name"
+                  (click)="selectCollege(college.id)"
+                  [attr.data-testid]="'college-select-' + college.id"
+                >
+                  <strong>{{ college.short_name }}</strong>
+                  <span class="cr-pa-muted">{{ college.city }}</span>
+                </button>
+              </td>
+              <td>{{ formatLakhs(college.tuition_lakhs) }}</td>
+              <td>₹{{ college.median_placement_lpa.toFixed(1) }} LPA</td>
+              <td>{{ college.placement_rate }}%</td>
+              <td class="cr-pa-table__routes">{{ college.admission_routes.join(' · ') }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="cr-pa-btn-sm"
+                  [class.is-on]="isShortlisted(college.id)"
+                  (click)="shortlist(college.id)"
+                  [attr.data-testid]="'college-shortlist-' + college.id"
+                >
+                  {{ isShortlisted(college.id) ? '✓ Shortlisted' : 'Shortlist' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  @if (selectedCollege(); as college) {
+    <section class="cr-pa-grid-12 cr-pa-section">
+      <article class="cr-pa-card cr-pa-card--highlight cr-pa-span-8" data-testid="selected-college-detail">
+        <div class="cr-pa-card__inner">
+          <cr-section-eyebrow>Selected lens</cr-section-eyebrow>
+          <div class="cr-pa-section__head">
+            <div>
+              <h2 class="cr-pa-section-heading">{{ college.name }}</h2>
+              <p class="cr-pa-muted">
+                {{ college.accreditation }} · NIRF #{{ college.nirf_rank }} · {{ college.source }}
+              </p>
+            </div>
+            <cr-confidence-badge [value]="college.confidence" />
+          </div>
+          <button
+            type="button"
+            class="cr-pa-btn cr-pa-btn-sm cr-pa-share-college"
+            data-testid="share-college-lens-button"
+            (click)="shareWithCollege()"
+          >
+            Share lens with college (preview)
+          </button>
+          <div class="cr-pa-detail-grid">
+            <div>
+              <span class="cr-pa-muted">Four-year estimate</span>
+              <p><strong>{{ formatLakhs(totalCost(college.id)) }}</strong></p>
+            </div>
+            <div>
+              <span class="cr-pa-muted">Median placement</span>
+              <p><strong>₹{{ college.median_placement_lpa }} LPA</strong></p>
+            </div>
+            <div>
+              <span class="cr-pa-muted">Seats (indicative)</span>
+              <p><strong>{{ college.seats }}</strong></p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="cr-pa-card cr-pa-span-4" data-testid="explore-next-step-card">
+        <div class="cr-pa-card__inner">
+          <cr-section-eyebrow>Next useful view</cr-section-eyebrow>
+          <h3 class="cr-pa-section-heading">See the real cost stack</h3>
+          <p class="cr-pa-muted">
+            Tuition is only one line item. Model hostel, living, buffer, and your family’s actual cash flow.
+          </p>
+          <a
+            class="cr-pa-btn cr-pa-btn--emerald"
+            routerLink="/app/money"
+            [queryParams]="{ college: selectedId() }"
+            data-testid="open-true-cost-button"
+          >
+            Open True Cost →
+          </a>
+        </div>
+      </article>
+    </section>
+  }
+</div>

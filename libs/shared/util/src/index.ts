@@ -1,2 +1,1 @@
-﻿/** Public API for shared-util */
-export {};
+﻿export { ClientAuditService, type ClientAuditEntry } from './client-audit.service';

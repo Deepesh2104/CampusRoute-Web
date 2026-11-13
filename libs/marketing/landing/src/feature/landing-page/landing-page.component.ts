@@ -8,6 +8,7 @@ import {
   OnInit,
   ViewEncapsulation,
   ElementRef,
+  HostBinding,
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,12 +19,14 @@ import { initLandingPageRuntime } from './landing-page.runtime';
 @Component({
   selector: 'cr-landing-page',
   templateUrl: './landing-page.component.html',
-  styleUrl: '../../styles/landing.scss',
+  styleUrls: ['../../styles/landing.scss', '../../styles/landing-product-theme.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [NO_ERRORS_SCHEMA],
 })
 export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  @HostBinding('class.cr-product-landing') readonly productLanding = true;
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -33,7 +36,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     document.body.classList.add('cr-legacy-landing');
     document.documentElement.classList.add('cr-legacy-landing');
-    document.documentElement.style.colorScheme = 'dark';
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.style.colorScheme = 'light';
   }
 
   ngAfterViewInit(): void {
@@ -97,6 +101,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     document.body.classList.remove('cr-legacy-landing', 'auth-open');
     document.body.style.overflow = '';
     document.documentElement.classList.remove('cr-legacy-landing');
+    document.documentElement.removeAttribute('data-theme');
     document.documentElement.style.colorScheme = '';
   }
 }

@@ -1,0 +1,166 @@
+<div class="cr-pa-page cr-pa-page--narrow">
+
+  <div class="cr-pa-page-hero">
+
+    <cr-section-eyebrow>Trust centre · P0</cr-section-eyebrow>
+
+    <h1 class="cr-pa-page-title-xl">
+
+      Your route.<br />
+
+      <span class="cr-pa-accent-emerald">Your control.</span>
+
+    </h1>
+
+    <p class="cr-pa-lede">
+
+      Toggle what the learner workspace may use on this device. Required scopes must stay on to enter
+
+      <strong>/app</strong>.
+
+    </p>
+
+    @if (blockedReason === 'required-consent') {
+
+      <p class="cr-pa-consent-alert" data-testid="consent-required-banner">
+
+        Turn on required data scopes below, then continue.
+
+      </p>
+
+    }
+
+  </div>
+
+
+
+  <section class="cr-pa-grid-12 cr-pa-section">
+
+    <article class="cr-pa-card cr-pa-span-7" data-testid="consent-controls-card">
+
+      <div class="cr-pa-card__inner">
+
+        <cr-section-eyebrow>Visibility controls</cr-section-eyebrow>
+
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">What CampusRoute may use</h2>
+
+        <ul class="cr-pa-consent-list">
+
+          @for (s of settings; track s.id) {
+
+            <li [attr.data-testid]="'consent-setting-' + s.id">
+
+              <label class="cr-pa-consent-row">
+
+                <input
+
+                  type="checkbox"
+
+                  [checked]="consent()[s.id]"
+
+                  (change)="toggle(s.id, $any($event.target).checked)"
+
+                  [attr.data-testid]="'consent-' + s.id + '-toggle'"
+
+                />
+
+                <span>
+
+                  <strong>{{ s.label }}</strong>
+
+                  @if (s.required) {
+
+                    <span class="cr-pa-badge">Required</span>
+
+                  }
+
+                  <span class="cr-pa-muted">{{ s.detail }}</span>
+
+                </span>
+
+              </label>
+
+            </li>
+
+          }
+
+        </ul>
+
+        @if (returnUrl) {
+
+          <button
+
+            type="button"
+
+            class="cr-pa-btn cr-pa-btn--emerald"
+
+            data-testid="consent-continue-button"
+
+            [disabled]="!requiredGranted()"
+
+            (click)="continueToApp()"
+
+          >
+
+            Continue to workspace
+
+          </button>
+
+        }
+
+      </div>
+
+    </article>
+
+
+
+    <article class="cr-pa-card cr-pa-span-5" data-testid="consent-receipt-card">
+
+      <div class="cr-pa-card__inner">
+
+        <cr-section-eyebrow>Receipt list</cr-section-eyebrow>
+
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Recent consent events</h2>
+
+        <ul class="cr-pa-receipt-list">
+
+          @for (r of receipts(); track r.id) {
+
+            <li>
+
+              <strong>{{ r.action }}</strong>
+
+              <span class="cr-pa-muted">{{ r.at | date: 'medium' }}</span>
+
+            </li>
+
+          } @empty {
+
+            @for (a of auditEntries().slice(0, 6); track a.id) {
+
+              <li>
+
+                <strong>{{ a.action }}</strong>
+
+                <span class="cr-pa-muted">{{ a.at | date: 'medium' }}</span>
+
+              </li>
+
+            } @empty {
+
+              <li class="cr-pa-muted">Changes will appear here with timestamp and scope.</li>
+
+            }
+
+          }
+
+        </ul>
+
+      </div>
+
+    </article>
+
+  </section>
+
+</div>
+
