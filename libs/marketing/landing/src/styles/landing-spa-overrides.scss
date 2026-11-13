@@ -1,34 +1,248 @@
 /* Angular shell fixes — not overwritten by sync-legacy-landing.mjs */
 
+/*
+ * apps/web sets html, body { height: 100% } for the product shell.
+ * Static legacy HTML uses auto height so the page scrolls.
+ */
+html.cr-legacy-landing,
+html:has(body.cr-legacy-landing) {
+  height: auto !important;
+  min-height: 100%;
+  min-height: 100svh;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body.cr-legacy-landing {
+  height: auto !important;
+  min-height: 100%;
+  min-height: 100svh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  font: 400 17px/1.7 var(--b) !important;
+  font-family: var(--b) !important;
+  background: var(--bg) !important;
+  color: var(--tx) !important;
+}
+
 body.cr-legacy-landing cr-root {
   display: block;
-  min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100svh;
+  height: auto !important;
+  overflow: visible;
 }
 
 body.cr-legacy-landing cr-landing-page {
   position: relative;
   isolation: isolate;
   display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   min-height: 100svh;
+  height: auto;
+  /* clip breaks position:fixed on #auth — legacy auth is a direct body child */
+  overflow: visible;
 }
 
-/* Legacy .bgfx is a body child (z-index:-1). Nesting breaks behind the canvas — lift under content. */
 body.cr-legacy-landing .bgfx {
   z-index: 0;
 }
 
-body.cr-legacy-landing cr-landing-page > header,
+/* Do NOT set position on header, .mcta, or #auth — legacy uses position:fixed for overlay. */
 body.cr-legacy-landing cr-landing-page > main,
-body.cr-legacy-landing cr-landing-page > footer,
-body.cr-legacy-landing cr-landing-page > .auth,
-body.cr-legacy-landing cr-landing-page > a.mcta,
-body.cr-legacy-landing cr-landing-page > .btn.mcta {
+body.cr-legacy-landing cr-landing-page > footer {
   position: relative;
   z-index: 1;
+  max-width: 100%;
 }
 
-body.cr-legacy-landing {
-  font: 400 17px/1.7 var(--b) !important;
-  font-family: var(--b) !important;
+body.cr-legacy-landing #auth.auth {
+  display: none;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: none;
+}
+
+body.cr-legacy-landing #auth.auth.on {
+  display: block !important;
+}
+
+body.cr-legacy-landing.auth-open {
+  overflow: hidden !important;
+}
+
+body.cr-legacy-landing.auth-open cr-landing-page > a.mcta {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.cr-legacy-landing .mq,
+body.cr-legacy-landing .wm {
+  max-width: 100vw;
+}
+
+/* Mobile: header menu must stay hidden until burger opens (SPA CSS order bug). */
+@media (max-width: 900px) {
+  body.cr-legacy-landing header .nav {
+    position: relative;
+    flex-wrap: nowrap;
+  }
+
+  body.cr-legacy-landing header .nav > nav[aria-label='Main']:not(.open) {
+    display: none !important;
+  }
+
+  body.cr-legacy-landing header .nav > nav[aria-label='Main'].open {
+    display: grid !important;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    z-index: 96;
+    padding: 20px 24px;
+    gap: 16px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: rgba(10, 15, 40, 0.96);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    font-size: 1.05rem;
+  }
+
+  body.cr-legacy-landing header .nav .bg {
+    display: block !important;
+  }
+
+  body.cr-legacy-landing header .nav .nbtn,
+  body.cr-legacy-landing header .nav .nlog {
+    display: none !important;
+  }
+
+  body.cr-legacy-landing header .nav nav.open .mlnk {
+    display: block;
+  }
+}
+
+@media (max-width: 700px) {
+  body.cr-legacy-landing cr-landing-page > a.mcta {
+    display: flex !important;
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+    top: auto !important;
+    justify-content: center;
+    z-index: 85;
+    margin: 0;
+    max-width: none;
+  }
+}
+
+/* Login / Sign up overlay — mobile polish (desktop uses legacy rules unchanged). */
+@media (max-width: 860px) {
+  body.cr-legacy-landing #auth.auth {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  body.cr-legacy-landing #auth .aw {
+    min-height: 100dvh;
+  }
+
+  body.cr-legacy-landing #auth .al {
+    padding: calc(env(safe-area-inset-top, 0px) + 44px) 20px 20px;
+    gap: 16px;
+  }
+
+  body.cr-legacy-landing #auth .al .logo {
+    font-size: 1.05rem;
+  }
+
+  body.cr-legacy-landing #auth .al h2 {
+    font-size: 1.65rem;
+    line-height: 1.12;
+  }
+
+  body.cr-legacy-landing #auth .al .fine {
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  body.cr-legacy-landing #auth .ar {
+    padding: 12px 20px calc(env(safe-area-inset-bottom, 0px) + 28px);
+    align-items: stretch;
+  }
+
+  body.cr-legacy-landing #auth .ar > .atb,
+  body.cr-legacy-landing #auth .ar > form,
+  body.cr-legacy-landing #auth .ar > .done {
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Close sits above tabs without overlapping the pill. */
+  body.cr-legacy-landing #auth .ar .x {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    right: 14px;
+    z-index: 110;
+    width: 40px;
+    height: 40px;
+  }
+
+  body.cr-legacy-landing #auth .ar .atb {
+    margin-top: 48px;
+    margin-bottom: 22px;
+  }
+
+  body.cr-legacy-landing #auth .ar h3 {
+    font-size: 1.55rem;
+  }
+
+  body.cr-legacy-landing #auth .ar input:not([type='checkbox']),
+  body.cr-legacy-landing #auth .ar select {
+    font-size: 16px; /* avoid iOS focus zoom */
+  }
+
+  body.cr-legacy-landing #auth .ar .ro {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  body.cr-legacy-landing #auth .ar .ro a {
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 0.92rem;
+  }
+
+  body.cr-legacy-landing #auth .ar .btn.fw {
+    margin-top: 4px;
+  }
+
+  body.cr-legacy-landing #auth .ar .sw2 {
+    margin-top: 22px;
+    padding-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  body.cr-legacy-landing #auth .ar .otp {
+    gap: 8px;
+  }
+
+  body.cr-legacy-landing #auth .ar .otp input:not([type='checkbox']) {
+    font-size: 1.25rem;
+    padding: 12px 0;
+  }
 }

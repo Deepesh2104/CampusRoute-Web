@@ -26,6 +26,28 @@ let css = styleMatch[1].trim();
 let bodyHtml = bodyMatch[1].trim();
 let js = scriptMatch[1].trim();
 
+// Header-only burger target (avoid footer nav); guard if missing.
+js = js.replace(
+  "var bg=$('bg'),nv=document.querySelector('.nav nav');bg.onclick",
+  'var bg=$(\'bg\'),nv=document.querySelector(\'header .nav > nav[aria-label="Main"]\');if(bg&&nv){bg.onclick',
+);
+js = js.replace(
+  "bg.setAttribute('aria-expanded','false')})});",
+  "bg.setAttribute('aria-expanded','false')})})}",
+);
+js = js.replace(
+  'function route(){var h=location.hash.slice(1);if(h===\'login\'||h===\'signup\')',
+  'function route(){if(!au||!tl||!ts||!fl||!fs)return;var h=location.hash.slice(1);if(h===\'login\'||h===\'signup\')',
+);
+
+// Close if (bg && nv) after burger wiring.
+if (js.includes('if(bg&&nv){bg.onclick') && !js.includes("})})}\nvar FC")) {
+  js = js.replace(
+    /if\(bg&&nv\)\{bg\.onclick[\s\S]*?bg\.setAttribute\('aria-expanded','false'\)\}\)\}\)\}/,
+    (m) => (m.endsWith('}') ? m : m + '}'),
+  );
+}
+
 // Angular route: apply legacy body chrome to document.body while landing is open.
 css = css.replace(/\bbody\{/g, 'body.cr-legacy-landing{');
 css = css.replace(/\bbody::before/g, 'body.cr-legacy-landing::before');
