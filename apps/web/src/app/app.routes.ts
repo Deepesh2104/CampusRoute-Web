@@ -6,6 +6,7 @@ import {
   guestAuthGuard,
 } from '@campusroute/core-auth';
 import { consentPolicyGuard } from '@campusroute/core-consent';
+import { learnerAppRoutes } from './learner-app.routes';
 
 export const appRoutes: Route[] = [
   {
@@ -25,13 +26,15 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./layouts/learner-shell/learner-shell.component').then((m) => m.LearnerShellComponent),
     canActivate: [authGuard, emailVerifiedGuard, consentPolicyGuard],
-    children: [
-      {
-        path: '',
-        loadChildren: () =>
-          import('@campusroute/platform-shell').then((m) => m.learnerShellRoutes),
-      },
-    ],
+    children: learnerAppRoutes,
+  },
+  {
+    path: 'parent',
+    loadComponent: () =>
+      import('./layouts/parent-shell/parent-shell.component').then((m) => m.ParentShellComponent),
+    canActivate: [authGuard, emailVerifiedGuard],
+    loadChildren: () =>
+      import('@campusroute/domains-parent').then((m) => m.parentRoutes),
   },
   { path: '**', redirectTo: '' },
 ];

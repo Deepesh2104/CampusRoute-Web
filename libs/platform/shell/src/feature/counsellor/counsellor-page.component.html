@@ -78,6 +78,16 @@
               [class.cr-pa-chat-bubble--user]="m.role === 'user'"
               [class.cr-pa-chat-bubble--assistant]="m.role === 'assistant'"
             >
+              @if (m.role === 'assistant' && m.assistantTone && m.assistantTone !== 'default') {
+                <span
+                  class="cr-pa-ai-tone"
+                  [class.cr-pa-ai-tone--refusal]="m.assistantTone === 'refusal'"
+                  [class.cr-pa-ai-tone--uncertain]="m.assistantTone === 'uncertain'"
+                  data-testid="counsellor-ai-tone-badge"
+                >
+                  {{ m.assistantTone === 'refusal' ? 'Cannot promise outcomes' : 'Limited evidence' }}
+                </span>
+              }
               <p [innerHTML]="formatMsg(m.content)"></p>
               @if (m.role === 'assistant' && m.citations.length) {
                 <div class="cr-pa-citation-block">

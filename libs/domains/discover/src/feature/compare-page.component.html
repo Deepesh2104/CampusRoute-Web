@@ -1,0 +1,261 @@
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <p class="cr-pa-eyebrow">Discover · compare · true cost module</p>
+    <h1 class="cr-pa-page-title-xl">Side-by-side trade-offs</h1>
+    <p class="cr-pa-lede">
+      Brochure tuition + hostel is only part of the story. Compare the <strong>full 4-year bill</strong> — exams,
+      assignments, pocket money, travel, lifestyle — then your family’s <strong>affordability</strong> on each campus.
+    </p>
+    <div class="cr-p2-hub-links" style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+      <a routerLink="/app/profile" class="cr-pa-btn cr-pa-btn--ghost">Edit pocket &amp; lifestyle</a>
+      <a routerLink="/app/finance/simulator" class="cr-pa-btn cr-pa-btn--emerald">Stress-test your numbers</a>
+    </div>
+  </div>
+
+  <cr-compare-college-picker
+    [selectedIds]="selectedIds()"
+    (pick)="onPickCollege($event)"
+    (removeSlot)="onRemoveCollege($event)"
+    (loadShortlist)="useShortlistAsCompare()"
+  />
+
+  @if (selected().length < 2) {
+    <div class="cr-pa-card cr-p2-empty">
+      <p>Add at least <strong>two colleges</strong> above (search any campus — shortlist not required).</p>
+    </div>
+  } @else {
+    <p class="cr-pa-muted cr-p2-compare-assumptions" data-testid="compare-household-note">
+      Affordability uses your profile pocket/lifestyle plus household income ₹{{ household().monthlyIncome.toLocaleString('en-IN') }}/mo,
+      savings ₹{{ (household().savingsInr / 100_000).toFixed(1) }}L, EMIs ₹{{ household().existingEmi.toLocaleString('en-IN') }} —
+      change these in the <a routerLink="/app/finance/simulator" class="cr-pa-text-link">simulator</a>.
+    </p>
+
+    <div class="cr-p2-compare-scroll">
+      <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Outcomes &amp; admission</h2>
+      <table class="cr-p2-compare-table" data-testid="discover-compare-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            @for (c of selected(); track c.id) {
+              <th>{{ c.short_name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ownership</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.ownership }}</td>
+            }
+          </tr>
+          <tr>
+            <td>City</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.city }}</td>
+            }
+          </tr>
+          <tr>
+            <td>Programs</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.programs.join(', ') }}</td>
+            }
+          </tr>
+          <tr>
+            <td>Median placement</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.median_placement_lpa }} LPA</td>
+            }
+          </tr>
+          <tr>
+            <td>Placement rate</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.placement_rate }}%</td>
+            }
+          </tr>
+          <tr>
+            <td>Placement methodology</td>
+            @for (c of selected(); track c.id) {
+              <td class="cr-p2-placement-note">{{ c.placement_methodology }}</td>
+            }
+          </tr>
+          <tr>
+            <td>Admission routes</td>
+            @for (c of selected(); track c.id) {
+              <td>{{ c.admission_routes.join(', ') }}</td>
+            }
+          </tr>
+          <tr>
+            <td>Provenance</td>
+            @for (c of selected(); track c.id) {
+              <td>
+                <cr-provenance-badge [source]="c.source" [confidence]="c.confidence" />
+              </td>
+            }
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="cr-pa-section-heading cr-pa-section-heading--md">4-year cost breakdown (where money goes)</h2>
+      <p class="cr-pa-muted cr-p2-placement-note">
+        Every row is part of your <strong>final-year-style total</strong> — what you likely spend across all four years, not just semester 1.
+      </p>
+      <table class="cr-p2-compare-table" data-testid="discover-compare-cost-table">
+        <thead>
+          <tr>
+            <th>Cost line</th>
+            @for (row of compareRows(); track row.college.id) {
+              <th>{{ row.college.short_name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (lineId of lineIds(); track lineId) {
+            <tr>
+              <td>
+                {{ lineLabel(lineId) }}
+                <span class="cr-p2-placement-note">{{ lineMeta(lineId) }}</span>
+              </td>
+              @for (row of compareRows(); track row.college.id) {
+                <td>₹{{ lineAmount(row, lineId) }}L</td>
+              }
+            </tr>
+          }
+          <tr class="cr-p2-compare-total-row">
+            <td><strong>Tuition + hostel only</strong></td>
+            @for (row of compareRows(); track row.college.id) {
+              <td>₹{{ row.tuitionHostelLakhs }}L</td>
+            }
+          </tr>
+          <tr class="cr-p2-compare-total-row">
+            <td><strong>Beyond tuition &amp; hostel</strong></td>
+            @for (row of compareRows(); track row.college.id) {
+              <td>₹{{ row.beyondTuitionLakhs }}L</td>
+            }
+          </tr>
+          <tr class="cr-p2-compare-total-row cr-p2-compare-total-row--grand">
+            <td><strong>Total full-life cost (4 years)</strong></td>
+            @for (row of compareRows(); track row.college.id) {
+              <td><strong>₹{{ row.totalLakhs }}L</strong></td>
+            }
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Your affordability (family liability)</h2>
+      <table class="cr-p2-compare-table" data-testid="discover-compare-afford-table">
+        <thead>
+          <tr>
+            <th>Signal</th>
+            @for (row of compareRows(); track row.college.id) {
+              <th>{{ row.college.short_name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Funding gap (after savings)</td>
+            @for (row of compareRows(); track row.college.id) {
+              <td>₹{{ row.affordability.funding_gap_lakhs }}L</td>
+            }
+          </tr>
+          <tr>
+            <td>Stress score</td>
+            @for (row of compareRows(); track row.college.id) {
+              <td>{{ row.affordability.stress_score }}/100</td>
+            }
+          </tr>
+          <tr>
+            <td>Stress level</td>
+            @for (row of compareRows(); track row.college.id) {
+              <td [class.cr-p2-stress-high]="row.affordability.stress_level === 'High'">
+                {{ row.affordability.stress_level }}
+              </td>
+            }
+          </tr>
+          <tr>
+            <td>Gap to cover (avg / month, 4y)</td>
+            @for (row of compareRows(); track row.college.id) {
+              <td>₹{{ gapMonthlyInr(row.affordability.funding_gap_lakhs).toLocaleString('en-IN') }}/mo</td>
+            }
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="cr-p2-compare-suggest" data-testid="compare-suggestions">
+        <div class="cr-p2-insight-head">
+          <div>
+            <p class="cr-pa-eyebrow">CampusRoute suggests</p>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">What this means for you</h2>
+          </div>
+          <p class="cr-p2-confidence-pill" data-testid="compare-planning-confidence">
+            Planning confidence {{ decisionPicks().planningConfidence }}%
+          </p>
+        </div>
+        <div class="cr-p2-pick-chips" data-testid="compare-pick-chips">
+          <span class="cr-p2-pick-chip">Lowest cost: <strong>{{ decisionPicks().cost }}</strong></span>
+          <span class="cr-p2-pick-chip">Lightest gap: <strong>{{ decisionPicks().gap }}</strong></span>
+          <span class="cr-p2-pick-chip">Placement signal: <strong>{{ decisionPicks().placement }}</strong></span>
+          <span class="cr-p2-pick-chip">Leanest payback: <strong>{{ decisionPicks().roi }}</strong></span>
+          <span class="cr-p2-pick-chip">Admission fit: <strong>{{ decisionPicks().admission }}</strong></span>
+        </div>
+
+        <div class="cr-p2-compare-scorecard-scroll">
+          <table class="cr-p2-compare-scorecard" data-testid="compare-scorecard-table">
+            <thead>
+              <tr>
+                <th>College</th>
+                <th>Full 4y</th>
+                <th>Gap</th>
+                <th>₹/mo plan</th>
+                <th>Stress</th>
+                <th>Median</th>
+                <th>Payback≈</th>
+                <th>Adm %</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of scorecard(); track s.id) {
+                <tr>
+                  <td><a [routerLink]="['/app/discover/colleges', s.id]" class="cr-pa-text-link">{{ s.name }}</a></td>
+                  <td>₹{{ s.totalLakhs }}L</td>
+                  <td>₹{{ s.gapLakhs }}L</td>
+                  <td>₹{{ s.gapMonthlyInr.toLocaleString('en-IN') }}</td>
+                  <td>{{ s.stress }}</td>
+                  <td>{{ s.medianLpa }} LPA</td>
+                  <td>{{ s.paybackYears }}y</td>
+                  <td>{{ s.admissionPct }}%</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cr-p2-insight-grid">
+          @for (ins of insights(); track ins.id) {
+            <article
+              class="cr-p2-insight-card"
+              [attr.data-insight-param]="ins.parameter"
+              [attr.data-insight-tone]="ins.tone"
+            >
+              <p class="cr-p2-insight-card__label">{{ ins.label }}</p>
+              <p class="cr-p2-insight-card__headline">{{ ins.headline }}</p>
+              <p class="cr-p2-insight-card__body">{{ ins.body }}</p>
+              @if (ins.bullets?.length) {
+                <ul class="cr-p2-insight-bullets">
+                  @for (b of ins.bullets; track b) {
+                    <li>{{ b }}</li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+        </div>
+        <p class="cr-pa-muted cr-p2-placement-note cr-p2-insight-foot">
+          Deeper, cited walkthrough:
+          <a routerLink="/app/counsellor" class="cr-pa-text-link">Counsellor</a>
+          · not a fee quote or placement promise.
+        </p>
+      </section>
+    </div>
+  }
+</div>

@@ -1,166 +1,105 @@
-<div class="cr-pa-page cr-pa-page--narrow">
-
-  <div class="cr-pa-page-hero">
-
+<div class="cr-pa-page cr-pa-consent-page">
+  <div class="cr-pa-page-hero cr-pa-consent-hero">
     <cr-section-eyebrow>Trust centre · P0</cr-section-eyebrow>
-
     <h1 class="cr-pa-page-title-xl">
-
       Your route.<br />
-
       <span class="cr-pa-accent-emerald">Your control.</span>
-
     </h1>
-
     <p class="cr-pa-lede">
-
-      Toggle what the learner workspace may use on this device. Required scopes must stay on to enter
-
-      <strong>/app</strong>.
-
+      CampusRoute is a no-login demo. These controls show the trust foundation we would carry into a full learner
+      product.
     </p>
-
     @if (blockedReason === 'required-consent') {
-
       <p class="cr-pa-consent-alert" data-testid="consent-required-banner">
-
         Turn on required data scopes below, then continue.
-
       </p>
-
     }
-
   </div>
 
-
-
-  <section class="cr-pa-grid-12 cr-pa-section">
-
-    <article class="cr-pa-card cr-pa-span-7" data-testid="consent-controls-card">
-
+  <section class="cr-pa-consent-grid">
+    <article class="cr-pa-card cr-pa-consent-controls" data-testid="consent-controls-card">
       <div class="cr-pa-card__inner">
+        <div class="cr-pa-consent-controls__head">
+          <span class="cr-pa-consent-controls__icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <div>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Visibility controls</h2>
+            <p class="cr-pa-muted">
+              Toggle what an eventual mentor or counsellor could see. The demo keeps everything on this workspace.
+            </p>
+          </div>
+        </div>
 
-        <cr-section-eyebrow>Visibility controls</cr-section-eyebrow>
-
-        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">What CampusRoute may use</h2>
-
-        <ul class="cr-pa-consent-list">
-
+        <ul class="cr-pa-consent-toggle-list">
           @for (s of settings; track s.id) {
-
-            <li [attr.data-testid]="'consent-setting-' + s.id">
-
-              <label class="cr-pa-consent-row">
-
-                <input
-
-                  type="checkbox"
-
-                  [checked]="consent()[s.id]"
-
-                  (change)="toggle(s.id, $any($event.target).checked)"
-
-                  [attr.data-testid]="'consent-' + s.id + '-toggle'"
-
-                />
-
-                <span>
-
+            <li>
+              <label class="cr-pa-consent-toggle" [attr.data-testid]="'consent-setting-' + s.id">
+                <span class="cr-pa-consent-toggle__copy">
                   <strong>{{ s.label }}</strong>
-
-                  @if (s.required) {
-
-                    <span class="cr-pa-badge">Required</span>
-
-                  }
-
                   <span class="cr-pa-muted">{{ s.detail }}</span>
-
                 </span>
-
+                <span class="cr-pa-switch">
+                  <input
+                    type="checkbox"
+                    [checked]="consent()[s.id]"
+                    (change)="toggle(s.id, $any($event.target).checked)"
+                    [attr.data-testid]="'consent-' + s.id + '-toggle'"
+                  />
+                  <span class="cr-pa-switch__track" aria-hidden="true"></span>
+                  <span class="cr-pa-switch__thumb" aria-hidden="true"></span>
+                </span>
               </label>
-
             </li>
-
           }
-
         </ul>
+
+        <p class="cr-pa-consent-lock">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Settings are illustrative and reset with this demo workspace.
+        </p>
 
         @if (returnUrl) {
-
           <button
-
             type="button"
-
-            class="cr-pa-btn cr-pa-btn--emerald"
-
+            class="cr-pa-btn cr-pa-btn--emerald cr-pa-consent-continue"
             data-testid="consent-continue-button"
-
             [disabled]="!requiredGranted()"
-
             (click)="continueToApp()"
-
           >
-
             Continue to workspace
-
           </button>
-
         }
-
       </div>
-
     </article>
 
-
-
-    <article class="cr-pa-card cr-pa-span-5" data-testid="consent-receipt-card">
-
+    <article class="cr-pa-card cr-pa-consent-access-log" data-testid="access-log-card">
       <div class="cr-pa-card__inner">
+        <cr-section-eyebrow>Access log</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Who saw what?</h2>
 
-        <cr-section-eyebrow>Receipt list</cr-section-eyebrow>
-
-        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Recent consent events</h2>
-
-        <ul class="cr-pa-receipt-list">
-
-          @for (r of receipts(); track r.id) {
-
-            <li>
-
-              <strong>{{ r.action }}</strong>
-
-              <span class="cr-pa-muted">{{ r.at | date: 'medium' }}</span>
-
+        <ul class="cr-pa-access-log-list">
+          @for (entry of accessLog(); track entry.title) {
+            <li class="cr-pa-access-log-item">
+              <span class="cr-pa-access-log-item__icon" [attr.data-kind]="entry.kind" aria-hidden="true"></span>
+              <div>
+                <strong>{{ entry.title }}</strong>
+                <span class="cr-pa-access-log-item__meta">{{ entry.detail }}</span>
+              </div>
             </li>
-
-          } @empty {
-
-            @for (a of auditEntries().slice(0, 6); track a.id) {
-
-              <li>
-
-                <strong>{{ a.action }}</strong>
-
-                <span class="cr-pa-muted">{{ a.at | date: 'medium' }}</span>
-
-              </li>
-
-            } @empty {
-
-              <li class="cr-pa-muted">Changes will appear here with timestamp and scope.</li>
-
-            }
-
           }
-
         </ul>
 
+        <p class="cr-pa-access-log-foot">
+          In production, this log would be tamper-evident and exportable for your records.
+        </p>
       </div>
-
     </article>
-
   </section>
-
 </div>
-

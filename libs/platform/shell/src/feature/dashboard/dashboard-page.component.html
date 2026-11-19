@@ -5,8 +5,9 @@
     <div class="cr-pa-hero__body">
       <div class="cr-pa-hero__meta">
         <span class="cr-pa-hero__badge" data-testid="demo-mode-badge">Decision workspace · demo mode</span>
-        <span class="cr-pa-hero__meta-note" data-testid="today-label">Updated for 2025 intake</span>
+        <span class="cr-pa-hero__meta-note" data-testid="today-label">2025 intake · saved on this device</span>
       </div>
+      <p class="cr-pa-hero__greeting" data-testid="hero-greeting">{{ heroGreeting() }}</p>
       <h1>
         Make the next<br />
         <span class="accent">four years count.</span>
@@ -16,8 +17,8 @@
         before the application fee.
       </p>
       <div class="cr-pa-hero__actions">
-        <a class="cr-pa-btn cr-pa-btn--amber" routerLink="/app/explore" data-testid="hero-explore-link">
-          Explore colleges →
+        <a class="cr-pa-btn cr-pa-btn--amber" [routerLink]="journeyCta().link" data-testid="hero-explore-link">
+          {{ journeyCta().label }} →
         </a>
         <a class="cr-pa-btn cr-pa-btn--ghost" routerLink="/app/counsellor" data-testid="hero-counsellor-link">
           Ask the counsellor ✦
@@ -26,7 +27,7 @@
     </div>
     <div class="cr-pa-hero__metrics">
       <div>
-        <div class="cr-pa-metric__value" data-testid="hero-colleges-metric">{{ overview.colleges.length }}</div>
+        <div class="cr-pa-metric__value" data-testid="hero-colleges-metric">{{ catalogueSize }}</div>
         <div class="cr-pa-metric__label">colleges</div>
       </div>
       <div>
@@ -40,55 +41,387 @@
     </div>
   </section>
 
-  <section class="cr-pa-grid-12">
-    <article class="cr-pa-card cr-pa-span-7" data-testid="learner-profile-card">
-      <div class="cr-pa-card__inner">
-        <p class="cr-pa-eyebrow">Your route so far</p>
-        <div class="cr-pa-profile-row">
-          <div>
-            <h2 class="cr-pa-section-heading" data-testid="learner-name">{{ overview.learner.name }}</h2>
-            <p class="cr-pa-muted" data-testid="learner-profile-summary">
-              {{ overview.learner.class_level }} · {{ overview.learner.stream }} · {{ overview.learner.city }}
-            </p>
-            <p class="cr-pa-muted" style="margin-top: 0.5rem">{{ overview.learner.goal }}</p>
-          </div>
-          <div class="cr-pa-goal" data-testid="profile-goal-card">
-            <p class="cr-pa-goal__label">Your north star</p>
-            <p class="cr-pa-goal__text">Strong fit, sensible cost</p>
+  @if (isAspirant()) {
+    <section class="cr-pa-home-journey" data-testid="home-journey-strip" aria-label="Journey progress">
+      @for (stage of journeyStages(); track stage.id) {
+        <a
+          class="cr-pa-home-journey__step"
+          [class.is-done]="stage.state === 'done'"
+          [class.is-next]="stage.state === 'next'"
+          [routerLink]="stage.link"
+          [attr.data-testid]="'home-journey-' + stage.id"
+        >
+          <span class="cr-pa-home-journey__label">{{ stage.label }}</span>
+          <span class="cr-pa-home-journey__detail">{{ stage.detail }}</span>
+        </a>
+      }
+    </section>
+  }
+
+  <section class="cr-pa-grid-12 cr-pa-grid-12--stretch">
+    <article class="cr-pa-card cr-pa-card--profile cr-pa-span-7" data-testid="learner-profile-card">
+      <div class="cr-pa-card__inner cr-pa-card__inner--compact">
+        <div class="cr-pa-home-profile__head">
+          <p class="cr-pa-eyebrow">Your route so far</p>
+          <span class="cr-pa-home-profile__role">{{ learnerRole() }}</span>
+        </div>
+        <div class="cr-pa-home-profile">
+          <div class="cr-pa-home-profile__avatar" aria-hidden="true">{{ profileInitials() }}</div>
+          <div class="cr-pa-home-profile__main">
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md" data-testid="learner-name">
+              {{ learnerName() }}
+            </h2>
+            <p class="cr-pa-muted" data-testid="learner-profile-summary">{{ profileSummary() }}</p>
+            <p class="cr-pa-home-profile__goal">{{ goalText() }}</p>
+            <a routerLink="/app/profile" class="cr-pa-text-link" data-testid="dashboard-edit-profile">
+              Edit profile →
+            </a>
           </div>
         </div>
+        <ul class="cr-pa-home-stats">
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Shortlist</span>
+            <span class="cr-pa-home-stat__value" data-testid="dashboard-shortlist-count">{{ shortlistCount() }}</span>
+            <a routerLink="/app/discover/colleges" class="cr-pa-home-stat__link">Colleges</a>
+          </li>
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Compare tray</span>
+            <span class="cr-pa-home-stat__value" data-testid="dashboard-compare-count"
+              >{{ compareCount() }}/{{ compareMax }}</span
+            >
+            <a routerLink="/app/discover/compare" class="cr-pa-home-stat__link">Open</a>
+          </li>
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Applications</span>
+            <span class="cr-pa-home-stat__value" data-testid="dashboard-apply-count">{{
+              admissionsDemo().applicationCount
+            }}</span>
+            <a routerLink="/app/admissions" class="cr-pa-home-stat__link">Apply</a>
+          </li>
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Checklist open</span>
+            <span
+              class="cr-pa-home-stat__value"
+              [class.cr-pa-home-stat__value--warn]="admissionsDemo().pendingChecklistItems > 0"
+            >
+              {{ admissionsDemo().pendingChecklistItems }}
+            </span>
+            @if (admissionsDemo().priority; as p) {
+              <a [routerLink]="'/app/admissions/' + p.applicationId" class="cr-pa-home-stat__link">Tracker</a>
+            } @else {
+              <span class="cr-pa-home-stat__hint">—</span>
+            }
+          </li>
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Stress snapshots</span>
+            <span class="cr-pa-home-stat__value" data-testid="dashboard-snapshot-count">{{ savedSnapshotCount() }}</span>
+            <a routerLink="/app/finance/simulator" class="cr-pa-home-stat__link">Simulator</a>
+          </li>
+          <li class="cr-pa-home-stat">
+            <span class="cr-pa-home-stat__label">Vault files</span>
+            <span class="cr-pa-home-stat__value">{{ documentVaultCount() }}</span>
+            <a routerLink="/app/documents" class="cr-pa-home-stat__link">Docs</a>
+          </li>
+        </ul>
+        @if (savedSnapshotCount() > 0 && latestSnapshot(); as snap) {
+          <p class="cr-pa-home-profile__footnote" data-testid="dashboard-snapshot-footnote">
+            Latest stress test: <strong>{{ snap.collegeLabel }}</strong> · score {{ snap.stressScore }}
+          </p>
+        }
+        @if (isAspirant()) {
+          <div class="cr-pa-home-signals" data-testid="home-admission-signals">
+            <span class="cr-pa-home-signals__label">Admission inputs</span>
+            @if (admissionSignals().fromProfile) {
+              <span>PCM {{ admissionSignals().pcmPct }}%</span>
+              <span>JEE Main {{ admissionSignals().jeeMainPercentile | number: '1.0-1' }} pctile</span>
+              <span>Entrance prep {{ admissionSignals().entranceReadinessPct }}%</span>
+            } @else {
+              <span class="cr-pa-home-signals__hint">Defaults used on cards —</span>
+              <a routerLink="/app/profile" class="cr-pa-text-link">add your scores</a>
+            }
+          </div>
+        }
+        <p class="cr-pa-home-north" data-testid="profile-goal-card">
+          <span class="cr-pa-home-north__label">North star</span>
+          <span class="cr-pa-home-north__text">{{ northStar() }}</span>
+        </p>
       </div>
     </article>
 
-    <article class="cr-pa-card cr-pa-card--emerald cr-pa-span-5" data-testid="decision-score-card">
-      <div class="cr-pa-card__inner">
+    <article class="cr-pa-card cr-pa-card--decision cr-pa-span-5" data-testid="decision-score-card">
+      <div class="cr-pa-card__inner cr-pa-card__inner--compact">
         <p class="cr-pa-eyebrow">Decision snapshot</p>
-        <div class="cr-pa-score-row">
-          <div>
-            <p class="cr-pa-score" data-testid="decision-score-value">
-              {{ decisionScore }}<span>/100</span>
-            </p>
-            <p class="cr-pa-muted" style="margin-top: 0.25rem">Evidence to decision</p>
+        <div class="cr-pa-decision-hero">
+          <p class="cr-pa-decision-score" data-testid="decision-score-value">
+            {{ decisionScore() }}<span>/100</span>
+          </p>
+          <p class="cr-pa-muted cr-pa-decision-caption">Evidence gathered across your workspace</p>
+          <div class="cr-pa-progress cr-pa-progress--slim" aria-hidden="true">
+            <div class="cr-pa-progress__bar" [style.width.%]="decisionScore()"></div>
           </div>
-          <span aria-hidden="true" style="font-size: 1.5rem; color: #047857">↗</span>
         </div>
-        <div class="cr-pa-progress" aria-hidden="true">
-          <div class="cr-pa-progress__bar" [style.width.%]="decisionScore"></div>
+        <div class="cr-pa-decision-metrics" aria-label="Score breakdown">
+          @for (pillar of decisionPillars(); track pillar.label) {
+            <div class="cr-pa-decision-metric">
+              <span class="cr-pa-decision-metric__label">{{ pillar.label }}</span>
+              <span class="cr-pa-decision-metric__value">{{ pillar.pct }}%</span>
+            </div>
+          }
         </div>
-        <p class="cr-pa-muted" style="margin-top: 1rem; font-size: 0.75rem" data-testid="decision-score-note">
-          You have enough context to shortlist. Next: test the family affordability of two options.
-        </p>
-        <a
-          class="cr-pa-text-link"
-          routerLink="/app/money"
-          data-testid="snapshot-money-link"
-          style="margin-top: 1.25rem; display: inline-block"
-        >
-          Run money check →
+        <p class="cr-pa-decision-note" data-testid="decision-score-note">{{ decisionScoreNote() }}</p>
+        <a class="cr-pa-text-link" [routerLink]="moneyLink()" data-testid="snapshot-money-link">
+          {{ moneyLinkLabel() }}
         </a>
       </div>
     </article>
   </section>
+
+  @if (isAspirant() && (shortlistColleges().length > 0 || compareColleges().length > 0)) {
+    <section class="cr-pa-home-picks" data-testid="home-your-picks">
+      <div class="cr-pa-home-picks__head">
+        <p class="cr-pa-eyebrow">Your picks</p>
+        @if (compareTuitionBand(); as band) {
+          <p class="cr-pa-home-picks__band" data-testid="home-tuition-band">
+            Compare tray brochure tuition+hostel <strong>₹{{ band.min }}–{{ band.max }}L/yr</strong> ({{ band.label }})
+          </p>
+        }
+      </div>
+      <div class="cr-pa-home-picks__lists">
+        @if (shortlistColleges().length > 0) {
+          <ul class="cr-pa-home-picks__list" aria-label="Shortlist">
+            @for (c of shortlistColleges(); track c.id) {
+              <li>
+                <a [routerLink]="['/app/discover/colleges', c.id]" class="cr-pa-home-pick" [attr.data-testid]="'home-shortlist-' + c.id">
+                  {{ c.short_name }}
+                  <span>{{ c.city }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+        @if (compareColleges().length > 0) {
+          <a routerLink="/app/discover/compare" class="cr-pa-btn cr-pa-btn--outline-emerald cr-pa-btn--compact" data-testid="home-open-compare">
+            Open compare ({{ compareCount() }}/{{ compareMax }}) →
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  @if (showPriorityStrip()) {
+    <section class="cr-pa-priority" data-testid="home-priority-strip" aria-label="This week">
+      <p class="cr-pa-eyebrow" style="margin: 0">This week</p>
+      <ul class="cr-pa-priority__list">
+        @if (inboxUnread() > 0) {
+          <li>
+            <a routerLink="/app/inbox" class="cr-pa-priority__link" data-testid="home-priority-inbox">
+              <strong>{{ inboxUnread() }} inbox update(s)</strong> — deadlines, saves, and demo alerts
+            </a>
+          </li>
+        }
+        @if (!profileAdmissionReady()) {
+          <li>
+            <a routerLink="/app/profile" class="cr-pa-priority__link" data-testid="home-priority-profile">
+              <strong>Profile:</strong> add PCM &amp; JEE percentile for admission % on cards
+            </a>
+          </li>
+        }
+        @if (admissionsDemo().pendingChecklistItems > 0 && admissionsDemo().priority; as p) {
+          <li>
+            <a
+              [routerLink]="'/app/admissions/' + p.applicationId"
+              class="cr-pa-priority__link"
+              data-testid="home-priority-apply"
+            >
+              <strong>{{ p.collegeLabel }}:</strong> {{ admissionsDemo().pendingChecklistItems }} checklist item(s) open
+              — {{ p.nextAction }}
+            </a>
+          </li>
+        }
+        @if (admissionsDemo().priority; as p) {
+          @if (admissionsDemo().pendingChecklistItems === 0) {
+            <li>
+              <a
+                [routerLink]="'/app/admissions/' + p.applicationId"
+                class="cr-pa-priority__link"
+                data-testid="home-priority-deadline"
+              >
+                <strong>Tracker:</strong> {{ p.collegeLabel }} · {{ p.deadline }}
+              </a>
+            </li>
+          }
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="cr-pa-section" data-testid="home-workspace">
+    <div class="cr-pa-section__head">
+      <div>
+        <p class="cr-pa-eyebrow">Workspace</p>
+        <h2 class="cr-pa-section-heading">What you need this week</h2>
+        <p class="cr-pa-muted">Discover → money → apply — demo links use your Profile &amp; local saves.</p>
+      </div>
+    </div>
+    <div class="cr-pa-workspace-grid">
+      <a routerLink="/app/discover/colleges" class="cr-pa-workspace-tile" data-testid="home-tile-colleges">
+        <span class="cr-pa-workspace-tile__title">Colleges</span>
+        <span class="cr-pa-workspace-tile__meta">{{ catalogueSize }} spotlight + search</span>
+      </a>
+      <a
+        routerLink="/app/discover/compare"
+        class="cr-pa-workspace-tile"
+        [class.cr-pa-workspace-tile--active]="compareCount() > 0"
+        data-testid="home-tile-compare"
+      >
+        <span class="cr-pa-workspace-tile__title">Compare tray</span>
+        <span class="cr-pa-workspace-tile__meta">{{ compareCount() }}/{{ compareMax }} picked</span>
+      </a>
+      <a routerLink="/app/money" class="cr-pa-workspace-tile" data-testid="home-tile-money">
+        <span class="cr-pa-workspace-tile__title">Money &amp; ROI</span>
+        <span class="cr-pa-workspace-tile__meta">True cost · payback band</span>
+      </a>
+      <a routerLink="/app/finance/simulator" class="cr-pa-workspace-tile" data-testid="home-tile-stress">
+        <span class="cr-pa-workspace-tile__title">Family stress test</span>
+        <span class="cr-pa-workspace-tile__meta">
+          @if (savedSnapshotCount() > 0) {
+            {{ savedSnapshotCount() }} snapshot(s) saved
+          } @else {
+            Model gap before you borrow
+          }
+        </span>
+      </a>
+      <a routerLink="/app/admissions" class="cr-pa-workspace-tile" data-testid="home-tile-apply">
+        <span class="cr-pa-workspace-tile__title">Apply · applications</span>
+        <span class="cr-pa-workspace-tile__meta">
+          {{ admissionsDemo().applicationCount }} tracker(s)
+          @if (admissionsDemo().pendingChecklistItems > 0) {
+            · {{ admissionsDemo().pendingChecklistItems }} docs pending
+          }
+        </span>
+      </a>
+      <a routerLink="/app/planner" class="cr-pa-workspace-tile" data-testid="home-tile-planner">
+        <span class="cr-pa-workspace-tile__title">Planner</span>
+        <span class="cr-pa-workspace-tile__meta">Kanban by application stage</span>
+      </a>
+      <a routerLink="/app/scholarships" class="cr-pa-workspace-tile" data-testid="home-tile-scholarships">
+        <span class="cr-pa-workspace-tile__title">Scholarships</span>
+        <span class="cr-pa-workspace-tile__meta">Profile-matched schemes</span>
+      </a>
+      <a routerLink="/app/loans" class="cr-pa-workspace-tile" data-testid="home-tile-loans">
+        <span class="cr-pa-workspace-tile__title">Future loan</span>
+        <span class="cr-pa-workspace-tile__meta">Lender compare (demo)</span>
+      </a>
+      <a routerLink="/app/documents" class="cr-pa-workspace-tile" data-testid="home-tile-documents">
+        <span class="cr-pa-workspace-tile__title">Documents vault</span>
+        <span class="cr-pa-workspace-tile__meta">
+          @if (documentVaultCount() > 0) {
+            {{ documentVaultCount() }} file(s) stored
+          } @else {
+            KYC · checklist proofs
+          }
+        </span>
+      </a>
+      <a
+        routerLink="/app/inbox"
+        class="cr-pa-workspace-tile"
+        [class.cr-pa-workspace-tile--active]="inboxUnread() > 0"
+        data-testid="home-tile-inbox"
+      >
+        <span class="cr-pa-workspace-tile__title">Inbox</span>
+        <span class="cr-pa-workspace-tile__meta">
+          @if (inboxUnread() > 0) {
+            {{ inboxUnread() }} unread
+          } @else {
+            Counsellor · saves · demo alerts
+          }
+        </span>
+      </a>
+      <a routerLink="/app/explore" class="cr-pa-workspace-tile" data-testid="home-tile-explore">
+        <span class="cr-pa-workspace-tile__title">Explore careers</span>
+        <span class="cr-pa-workspace-tile__meta">Paths · salaries · college links</span>
+      </a>
+      <a routerLink="/app/consent" class="cr-pa-workspace-tile" data-testid="home-tile-consent">
+        <span class="cr-pa-workspace-tile__title">Data &amp; consent</span>
+        <span class="cr-pa-workspace-tile__meta">What we store · share preview</span>
+      </a>
+      <a routerLink="/app/profile" class="cr-pa-workspace-tile" data-testid="home-tile-profile">
+        <span class="cr-pa-workspace-tile__title">Profile</span>
+        <span class="cr-pa-workspace-tile__meta">
+          @if (profileAdmissionReady()) {
+            PCM / JEE filled — admission chance works
+          } @else {
+            Add PCM &amp; JEE for admission %
+          }
+        </span>
+      </a>
+      <a routerLink="/app/counsellor" class="cr-pa-workspace-tile" data-testid="home-tile-counsellor">
+        <span class="cr-pa-workspace-tile__title">Counsellor</span>
+        <span class="cr-pa-workspace-tile__meta">Ask with your shortlist context</span>
+      </a>
+      <a routerLink="/parent/dashboard" class="cr-pa-workspace-tile" data-testid="home-tile-parent">
+        <span class="cr-pa-workspace-tile__title">Parent view</span>
+        <span class="cr-pa-workspace-tile__meta">Consent demo · family read-only</span>
+      </a>
+    </div>
+  </section>
+
+  @if (isAspirant()) {
+    <section class="cr-pa-section" data-testid="home-fund-apply">
+      <div class="cr-pa-section__head">
+        <div>
+          <p class="cr-pa-eyebrow">Fund &amp; apply</p>
+          <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Scholarships &amp; loan compare</h2>
+        </div>
+        <a routerLink="/app/scholarships" class="cr-pa-text-link" data-testid="home-all-scholarships">All schemes →</a>
+      </div>
+      <div class="cr-pa-home-fund-grid">
+        @for (scheme of featuredScholarships; track scheme.id) {
+          <a
+            routerLink="/app/scholarships"
+            class="cr-pa-card cr-pa-home-fund-card"
+            [attr.data-testid]="'home-scholarship-' + scheme.id"
+          >
+            <div class="cr-pa-card__inner cr-pa-card__inner--compact">
+              <p class="cr-pa-home-fund-card__provider">{{ scheme.provider }}</p>
+              <h3 class="cr-pa-home-fund-card__title">{{ scheme.name }}</h3>
+              <p class="cr-pa-home-fund-card__meta">
+                Up to ₹{{ scheme.amount_lakhs }}L · {{ scheme.deadline }}
+              </p>
+              <p class="cr-pa-home-fund-card__reason">{{ scheme.match_reason }}</p>
+            </div>
+          </a>
+        }
+        <a routerLink="/app/loans" class="cr-pa-card cr-pa-home-fund-card" data-testid="home-loan-compare-teaser">
+          <div class="cr-pa-card__inner cr-pa-card__inner--compact">
+            <p class="cr-pa-home-fund-card__provider">Education finance</p>
+            <h3 class="cr-pa-home-fund-card__title">Future loan compare</h3>
+            <p class="cr-pa-home-fund-card__meta">Rates · moratorium · checklist handoff (demo)</p>
+            <p class="cr-pa-home-fund-card__reason">CampusRoute does not sanction loans — compare then apply with lender.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    @if (inboxPreview().length > 0) {
+      <section class="cr-pa-home-inbox" data-testid="home-inbox-preview">
+        <div class="cr-pa-home-inbox__head">
+          <p class="cr-pa-eyebrow">Inbox</p>
+          <a routerLink="/app/inbox" class="cr-pa-text-link">View all →</a>
+        </div>
+        <ul class="cr-pa-home-inbox__list">
+          @for (item of inboxPreview(); track item.id) {
+            <li>
+              <a routerLink="/app/inbox" class="cr-pa-home-inbox__item" [class.is-unread]="!item.read">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.detail }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
 
   <section class="cr-pa-section">
     <div class="cr-pa-section__head">
@@ -100,53 +433,100 @@
     </div>
     <div class="cr-pa-career-grid">
       @for (career of overview.careers; track career.id; let i = $index) {
-        <article class="cr-pa-card cr-pa-career-card" [attr.data-testid]="'career-card-' + career.id">
-          <div class="cr-pa-card__inner">
-            <span class="cr-pa-badge" [attr.data-testid]="'career-demand-' + career.id">{{ career.demand }} demand</span>
+        <a
+          class="cr-pa-card cr-pa-career-card cr-pa-career-card--link"
+          routerLink="/app/explore"
+          [attr.data-testid]="'career-card-' + career.id"
+        >
+          <div class="cr-pa-card__inner cr-pa-card__inner--compact cr-pa-career-card__inner">
+            <span
+              class="cr-pa-career-demand"
+              [class.cr-pa-career-demand--very-high]="careerDemandTone(career.demand) === 'very-high'"
+              [class.cr-pa-career-demand--rising]="careerDemandTone(career.demand) === 'rising'"
+              [class.cr-pa-career-demand--steady]="careerDemandTone(career.demand) === 'steady'"
+              [attr.data-testid]="'career-demand-' + career.id"
+            >
+              {{ career.demand }}
+            </span>
             <h3 [attr.data-testid]="'career-title-' + career.id">{{ career.title }}</h3>
-            <p>{{ career.tagline }}</p>
-            <p class="cr-pa-salary">{{ formatRange(career.salary_min_lpa, career.salary_max_lpa) }}</p>
+            <p class="cr-pa-career-card__tagline">{{ career.tagline }}</p>
+            <p class="cr-pa-career-card__sub">
+              {{ careerHubsPreview(career.hubs) }}
+              @if (career.skills.length > 0) {
+                · {{ career.skills[0] }}
+              }
+              @if (career.skills.length > 1) {
+                · {{ career.skills[1] }}
+              }
+            </p>
+            <div class="cr-pa-career-card__foot">
+              <span class="cr-pa-career-card__salary">{{ formatRange(career.salary_min_lpa, career.salary_max_lpa) }}</span>
+              <span class="cr-pa-career-card__cta">Explore →</span>
+            </div>
           </div>
-        </article>
+        </a>
       }
     </div>
   </section>
 
-  <section class="cr-pa-grid-12 cr-pa-section">
-    <article class="cr-pa-card cr-pa-span-7" data-testid="timeline-card">
-      <div class="cr-pa-card__inner">
-        <p class="cr-pa-eyebrow">Longitudinal record</p>
-        <h2 class="cr-pa-section-heading">Your decision trail</h2>
-        <div class="cr-pa-timeline">
-          @for (item of overview.timeline; track item.id) {
-            <div class="cr-pa-timeline__item" [attr.data-testid]="'timeline-item-' + item.id">
-              <span
-                class="cr-pa-timeline__dot"
-                [class.is-current]="item.status === 'current'"
-                [class.is-next]="item.status === 'next'"
-              ></span>
-              <div style="flex: 1">
+  <section class="cr-pa-grid-12 cr-pa-section cr-pa-grid-12--stretch">
+    <article class="cr-pa-card cr-pa-card--timeline cr-pa-span-7" data-testid="timeline-card">
+      <div class="cr-pa-card__inner cr-pa-card__inner--compact">
+        <div class="cr-pa-timeline-head">
+          <div>
+            <p class="cr-pa-eyebrow">Longitudinal record</p>
+            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Your decision trail</h2>
+          </div>
+          <p class="cr-pa-timeline-summary">
+            {{ timelineDoneCount }}/{{ overview.timeline.length }} logged · demo trail syncs with saves
+          </p>
+        </div>
+        <ol class="cr-pa-timeline cr-pa-timeline--rich">
+          @for (item of overview.timeline; track item.id; let last = $last) {
+            <li
+              class="cr-pa-timeline__item"
+              [class.is-done]="item.status === 'done'"
+              [class.is-current]="item.status === 'current'"
+              [class.is-next]="item.status === 'next'"
+              [attr.data-testid]="'timeline-item-' + item.id"
+            >
+              <div class="cr-pa-timeline__rail" aria-hidden="true">
+                <span class="cr-pa-timeline__dot"></span>
+                @if (!last) {
+                  <span class="cr-pa-timeline__line"></span>
+                }
+              </div>
+              <div class="cr-pa-timeline__body">
                 <p class="cr-pa-timeline__label">{{ item.label }}</p>
                 <p class="cr-pa-timeline__detail">{{ item.detail }}</p>
               </div>
-              <span class="cr-pa-timeline__date">{{ item.date }}</span>
-            </div>
+              <span
+                class="cr-pa-timeline__chip"
+                [class.is-today]="item.date === 'Today' || item.date === 'TODAY'"
+                [class.is-next]="item.status === 'next'"
+              >
+                {{ item.date }}
+              </span>
+            </li>
           }
-        </div>
+        </ol>
       </div>
     </article>
 
-    <article class="cr-pa-card cr-pa-span-5" data-testid="next-step-card">
-      <div class="cr-pa-card__inner">
+    <article class="cr-pa-card cr-pa-card--next cr-pa-span-5" data-testid="next-step-card">
+      <div class="cr-pa-card__inner cr-pa-card__inner--compact cr-pa-next-step__inner">
         <p class="cr-pa-eyebrow">One useful next step</p>
-        <h2 class="cr-pa-section-heading">Stress-test the shortlist</h2>
-        <p class="cr-pa-muted">
-          A college can look affordable on paper and still feel tight month to month. Model income, savings, and EMI
-          pressure before you commit.
-        </p>
-        <a class="cr-pa-btn cr-pa-btn--emerald" routerLink="/app/money" data-testid="next-step-money-link">
-          Open True Cost &amp; ROI →
-        </a>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">{{ nextStep().title }}</h2>
+        <p class="cr-pa-muted cr-pa-next-step__body">{{ nextStep().body }}</p>
+        <div class="cr-pa-next-step__actions">
+          <a
+            class="cr-pa-btn cr-pa-btn--outline-emerald cr-pa-btn--block"
+            [routerLink]="nextStep().link"
+            [attr.data-testid]="nextStep().testId"
+          >
+            {{ nextStep().label }}
+          </a>
+        </div>
       </div>
     </article>
   </section>

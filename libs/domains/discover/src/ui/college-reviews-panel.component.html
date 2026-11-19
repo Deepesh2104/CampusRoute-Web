@@ -1,0 +1,164 @@
+<section class="cr-p2-dossier-section" id="reviews" data-testid="college-reviews-section">
+  <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Student reviews · branch voices</h2>
+  <p class="cr-pa-muted">
+    Read community voices below. <strong>You can post only for your own enrolled college</strong> (Profile → College student + college name must match this dossier).
+  </p>
+
+  <div class="cr-p2-review-hero" data-testid="college-review-aggregate">
+    @if (aggregate(); as agg) {
+      <div class="cr-p2-review-hero__stats">
+        <p class="cr-p2-review-hero__count">
+          <strong>{{ agg.total_reviews }}</strong>
+          <span>student reviews</span>
+        </p>
+        <p class="cr-p2-review-hero__count">
+          <strong>{{ agg.would_recommend_pct }}%</strong>
+          <span>would recommend (★4+)</span>
+        </p>
+        <p class="cr-p2-review-hero__count">
+          <strong>★ {{ formatStars(agg.averages?.overall) }}</strong>
+          <span>overall average</span>
+        </p>
+        <p class="cr-p2-review-hero__count">
+          <strong>{{ agg.verified_count }}</strong>
+          <span>campus-verified (seed demo)</span>
+        </p>
+      </div>
+      @if (agg.averages; as av) {
+        <ul class="cr-p2-review-dim-list cr-p2-review-dim-list--hero">
+          <li><span>Academics</span><strong>★ {{ formatStars(av.academics) }}</strong></li>
+          <li><span>Hostel / mess</span><strong>★ {{ formatStars(av.hostel) }}</strong></li>
+          <li><span>Placement support</span><strong>★ {{ formatStars(av.placement_support) }}</strong></li>
+          <li><span>Campus life</span><strong>★ {{ formatStars(av.campus_life) }}</strong></li>
+        </ul>
+      }
+    }
+    <div class="cr-p2-review-hero__actions">
+      @if (canWriteReview()) {
+        <button type="button" class="cr-pa-btn cr-pa-btn--emerald" (click)="openForm()" data-testid="college-review-write-btn">
+          Write your review
+        </button>
+      } @else {
+        <a routerLink="/app/profile" class="cr-pa-btn cr-pa-btn--ghost">Set Profile for your college</a>
+      }
+      @if (submitted()) {
+        <span class="cr-p2-review-saved" role="status">Thanks — counts updated on this page.</span>
+      }
+      @if (blockedMessage()) {
+        <span class="cr-p2-review-warn" role="alert">{{ blockedMessage() }}</span>
+      }
+    </div>
+  </div>
+
+  @if (showForm()) {
+    <form class="cr-pa-card cr-p2-review-form" (submit)="submitReview($event)" data-testid="college-review-form">
+      <div class="cr-pa-card__inner">
+        <p class="cr-pa-eyebrow">Share your experience</p>
+        <p class="cr-pa-muted">{{ profileHint() }}</p>
+
+        <div class="cr-p2-review-form__grid">
+          <label>
+            Branch
+            <select
+              class="cr-p2-input"
+              [value]="draftBranch()"
+              (change)="draftBranch.set($any($event.target).value)"
+            >
+              @for (b of branches(); track b.branch) {
+                <option [value]="b.branch">{{ b.branch }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Batch / year
+            <input
+              class="cr-p2-input"
+              placeholder="e.g. BTech 2022–26"
+              [value]="draftBatch()"
+              (input)="draftBatch.set($any($event.target).value)"
+            />
+          </label>
+        </div>
+
+        <fieldset class="cr-p2-review-form__ratings">
+          <legend>Ratings (1–5)</legend>
+          <label>Overall <input type="number" min="1" max="5" [value]="draftOverall()" (input)="draftOverall.set(+$any($event.target).value)" /></label>
+          <label>Academics <input type="number" min="1" max="5" [value]="draftAcademics()" (input)="draftAcademics.set(+$any($event.target).value)" /></label>
+          <label>Hostel <input type="number" min="1" max="5" [value]="draftHostel()" (input)="draftHostel.set(+$any($event.target).value)" /></label>
+          <label>Placement support <input type="number" min="1" max="5" [value]="draftPlacement()" (input)="draftPlacement.set(+$any($event.target).value)" /></label>
+          <label>Campus life <input type="number" min="1" max="5" [value]="draftCampus()" (input)="draftCampus.set(+$any($event.target).value)" /></label>
+        </fieldset>
+
+        <label class="cr-p2-review-form__check">
+          <input type="checkbox" [checked]="draftPlaced()" (change)="draftPlaced.set($any($event.target).checked)" />
+          I received a placement / internship offer from this college pipeline
+        </label>
+        @if (draftPlaced()) {
+          <label>
+            Employer (optional)
+            <input
+              class="cr-p2-input"
+              [value]="draftEmployer()"
+              (input)="draftEmployer.set($any($event.target).value)"
+            />
+          </label>
+        }
+
+        <label>
+          Your review (min 30 characters)
+          <textarea
+            class="cr-p2-input cr-p2-review-textarea"
+            rows="4"
+            [value]="draftBody()"
+            (input)="draftBody.set($any($event.target).value)"
+            placeholder="Fees hidden costs, branch truth, hostel, peer group — what you wished you knew before counselling…"
+          ></textarea>
+        </label>
+
+        <div class="cr-p2-review-form__foot">
+          <button type="submit" class="cr-pa-btn cr-pa-btn--emerald">Post review</button>
+          <button type="button" class="cr-pa-btn cr-pa-btn--ghost" (click)="showForm.set(false)">Cancel</button>
+        </div>
+      </div>
+    </form>
+  }
+
+  <ul class="cr-p2-review-list" data-testid="college-review-list">
+    @for (r of reviews(); track r.id) {
+      <li class="cr-pa-card cr-p2-review-card">
+        <div class="cr-pa-card__inner">
+          <header class="cr-p2-review-card__head">
+            <div>
+              <strong>{{ r.author_label }}</strong>
+              @if (r.verified_campus) {
+                <span class="cr-p2-review-badge">Campus verified</span>
+              } @else {
+                <span class="cr-p2-review-badge cr-p2-review-badge--pending">Community · verify pending</span>
+              }
+            </div>
+            <span class="cr-pa-muted">★ {{ formatStars(r.overall) }} · {{ r.branch }} · {{ r.batch_label }}</span>
+          </header>
+          <p class="cr-p2-review-card__body">{{ r.body }}</p>
+          @if (r.placed) {
+            <p class="cr-pa-muted cr-p2-review-card__placed">
+              Placed{{ r.employer ? ' · ' + r.employer : '' }}
+            </p>
+          }
+          <footer class="cr-pa-muted">{{ reviewDate(r) }}</footer>
+        </div>
+      </li>
+    }
+  </ul>
+
+  <article class="cr-pa-card cr-p2-decision-card">
+    <div class="cr-pa-card__inner">
+      <h3 class="cr-p2-dossier-h3">Before you lock choices</h3>
+      <ul class="cr-p2-check-list">
+        <li>Match your category row in Admission with JoSAA PDF — demo numbers are illustrative.</li>
+        <li>Open each branch accordion: official cutoff + student stars for that branch.</li>
+        <li>Run family stress test if gap &gt; ₹5L; compare two peers from Similar colleges.</li>
+        <li>Copy family summary for parents — then Counsellor with your rank + branch doubt.</li>
+      </ul>
+    </div>
+  </article>
+</section>

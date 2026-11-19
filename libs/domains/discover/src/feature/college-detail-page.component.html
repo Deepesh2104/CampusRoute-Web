@@ -1,0 +1,306 @@
+@if (college(); as c) {
+  @if (dossier(); as d) {
+    <div class="cr-pa-page cr-p2-dossier">
+      <p class="cr-p2-dossier-back">
+        <a routerLink="/app/discover/colleges" class="cr-pa-text-link">← Catalogue</a>
+      </p>
+
+      @if (chance(); as ch) {
+        <aside class="cr-p2-dossier-sticky cr-p2-dossier-anchor" id="for-you" data-testid="college-for-you-bar">
+          <div class="cr-p2-dossier-sticky__metrics">
+            <span>Your fit <strong [class]="probClass(ch.headline_pct)">{{ ch.headline_pct }}%</strong></span>
+            <span>4y cost <strong>₹{{ totalLakhs() }}L</strong></span>
+            @if (affordability(); as a) {
+              <span>Gap <strong>₹{{ a.funding_gap_lakhs }}L</strong></span>
+              <span>Payback≈ <strong>{{ paybackYears() }}y</strong></span>
+            }
+            @if (reviewAggregate().total_reviews > 0) {
+              <span>Reviews <strong>{{ reviewAggregate().total_reviews }}</strong></span>
+            }
+          </div>
+          <div class="cr-p2-dossier-sticky__actions">
+            <a routerLink="/app/finance/simulator" [queryParams]="{ college: c.id }" class="cr-pa-btn cr-pa-btn--ghost">Stress test</a>
+            <a
+              routerLink="/app/discover/compare"
+              [queryParams]="{ ids: facade.compareQueryIds(c.id) }"
+              class="cr-pa-btn cr-pa-btn--ghost"
+              (click)="ensureComparePick(c.id)"
+            >Compare</a>
+            <a routerLink="/app/counsellor" [queryParams]="counsellorQuery()" class="cr-pa-btn cr-pa-btn--ghost">Counsellor</a>
+            <a routerLink="/app/planner" class="cr-pa-btn cr-pa-btn--ghost">Planner</a>
+            <button
+              type="button"
+              class="cr-pa-btn cr-pa-btn--ghost"
+              [class.cr-pa-btn--outline-emerald]="facade.isComparePick(c.id)"
+              (click)="toggleComparePick(c.id)"
+            >
+              {{ facade.isComparePick(c.id) ? '✓ Compare tray' : '+ Compare tray' }}
+            </button>
+            <button type="button" class="cr-pa-btn cr-pa-btn--emerald" (click)="toggleShortlist()">
+              {{ isShortlisted() ? 'Shortlisted' : 'Shortlist' }}
+            </button>
+          </div>
+        </aside>
+      }
+
+      <header class="cr-p2-dossier-hero cr-p2-dossier-anchor" id="overview">
+        <span class="cr-p2-detail-hero__badge">{{ c.institute_tier }}</span>
+        <h1 class="cr-pa-page-title-xl">{{ c.name }}</h1>
+        <p class="cr-pa-lede">{{ c.city }} · {{ c.ownership }} · Est. {{ d.established }} · NIRF #{{ c.nirf_rank }}</p>
+        <p class="cr-p2-dossier-overview">{{ d.overview }}</p>
+
+        <dl class="cr-p2-glance-grid">
+          <div><dt>Campus</dt><dd>{{ d.campus_area }}</dd></div>
+          <div><dt>UG seats (approx)</dt><dd>{{ d.ug_seats_approx.toLocaleString('en-IN') }}</dd></div>
+          <div><dt>Accreditation</dt><dd>{{ c.accreditation }} · {{ d.accreditations_extra }}</dd></div>
+          <div><dt>Official site</dt><dd><a [href]="d.website" class="cr-pa-text-link" target="_blank" rel="noopener">{{ d.website }}</a></dd></div>
+          <div><dt>Contact</dt><dd>{{ d.email_contact }}</dd></div>
+          <div><dt>Brochure tuition (4y)</dt><dd>₹{{ c.tuition_lakhs }}L + hostel ₹{{ c.hostel_lakhs }}L</dd></div>
+          <div><dt>Median placement</dt><dd>{{ c.median_placement_lpa }} LPA · {{ c.placement_rate }}%</dd></div>
+          <div><dt>Primary exam</dt><dd>{{ c.primary_entrance }}</dd></div>
+        </dl>
+        <cr-provenance-badge [source]="c.source" [confidence]="c.confidence" />
+      </header>
+
+      @if (chance(); as ch) {
+        <section class="cr-p2-detail-admission-banner cr-p2-dossier-anchor" id="admission">
+          <div>
+            <p class="cr-pa-eyebrow">Your admission chance</p>
+            <p class="cr-p2-admission-prob cr-p2-admission-prob--xl" [class]="probClass(ch.headline_pct)">
+              {{ ch.headline_pct }}%
+            </p>
+            <p class="cr-p2-admission-status" [class]="probClass(ch.headline_pct)">{{ ch.status_label }}</p>
+          </div>
+          <div class="cr-p2-admission-banner-notes">
+            <p><strong>Exam path</strong> {{ ch.exam_path_pct }}% <span class="cr-pa-muted">— {{ ch.exam_summary }}</span></p>
+            <p><strong>MQ / higher-fee</strong> {{ ch.management_path_pct }}% <span class="cr-pa-muted">— {{ ch.fallback_summary }}</span></p>
+          </div>
+        </section>
+      }
+
+      <section class="cr-p2-dossier-section">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Admission · eligibility &amp; process</h2>
+        <div class="cr-p2-dossier-cols">
+          <article class="cr-pa-card">
+            <div class="cr-pa-card__inner">
+              <h3 class="cr-p2-dossier-h3">Who can apply</h3>
+              <ul class="cr-p2-eligibility-list">
+                <li><span>PCM (10+2)</span><strong>≥ {{ c.pcm_min_pct }}%</strong></li>
+                <li><span>Board aggregate</span><strong>≥ {{ c.board_min_pct }}%</strong></li>
+                @if (c.jee_main_percentile_min > 0) {
+                  <li><span>JEE Main (typical)</span><strong>{{ c.jee_main_percentile_min }}+ percentile</strong></li>
+                }
+                @if (c.jee_advanced_rank_max) {
+                  <li><span>JEE Advanced CSE band</span><strong>~{{ c.jee_advanced_rank_max!.toLocaleString('en-IN') }} AIR</strong></li>
+                }
+                <li><span>Entrance</span><strong>{{ c.primary_entrance }}</strong></li>
+                <li><span>Counselling</span><strong>{{ d.counselling_body }}</strong></li>
+                <li><span>Application window</span><strong>{{ d.application_window }}</strong></li>
+                <li><span>Management quota</span><strong>{{ c.management_quota_available ? 'Yes' : 'No' }}</strong></li>
+              </ul>
+            </div>
+          </article>
+          <article class="cr-pa-card">
+            <div class="cr-pa-card__inner">
+              <h3 class="cr-p2-dossier-h3">Step-by-step</h3>
+              <ol class="cr-p2-steps">
+                @for (step of d.admission_steps; track step; let i = $index) {
+                  <li><span class="cr-p2-steps__n">{{ i + 1 }}</span>{{ step }}</li>
+                }
+              </ol>
+            </div>
+          </article>
+        </div>
+
+        <h3 class="cr-p2-dossier-h3" style="margin-top: 1rem">Category-wise cutoffs (CSE · demo 2025)</h3>
+        <p class="cr-pa-muted cr-p2-placement-note">Verify on JoSAA / institute PDF before choice locking.</p>
+        <table class="cr-p2-trend-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>CSE closing</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cat of d.category_cutoffs; track cat.category) {
+              <tr>
+                <td>{{ cat.category }}</td>
+                <td><strong>{{ cat.cse_closing }}</strong></td>
+                <td class="cr-pa-muted">{{ cat.note }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <h3 class="cr-p2-dossier-h3" style="margin-top: 1rem">Admission calendar</h3>
+        <ol class="cr-p2-dossier-timeline">
+          @for (m of d.admission_milestones; track m.title) {
+            <li class="cr-p2-dossier-timeline__step">
+              <div class="cr-p2-dossier-timeline__marker" aria-hidden="true"></div>
+              <div class="cr-p2-dossier-timeline__card">
+                <span class="cr-p2-dossier-timeline__when">{{ m.when }}</span>
+                <strong>{{ m.title }}</strong>
+                <p>{{ m.detail }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+
+        <h3 class="cr-p2-dossier-h3" style="margin-top: 1rem">Documents checklist</h3>
+        <ul class="cr-p2-dossier-docs">
+          @for (doc of d.document_checklist; track doc) {
+            <li>{{ doc }}</li>
+          }
+        </ul>
+      </section>
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="branches">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Branches · placement by branch</h2>
+        <p class="cr-pa-muted">
+          Open each branch for official cutoffs + placement, plus live student review count for that branch.
+        </p>
+        <cr-college-branch-accordion
+          [branches]="d.branch_details"
+          [byBranch]="reviewAggregate().by_branch"
+        />
+      </section>
+
+      <cr-college-reviews-panel
+        [collegeId]="c.id"
+        [collegeShortName]="c.short_name"
+        [branches]="d.branch_details"
+      />
+
+      @if (trends(); as t) {
+        <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="placement">
+          <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Placement · 5-year numbers</h2>
+          <p class="cr-pa-muted">{{ d.higher_studies_opt_out_note }}</p>
+          <div class="cr-p2-dossier-charts-stack">
+            <cr-placement-trend-chart [series]="t.placement" testId="college-placement-chart" />
+            <cr-placement-data-table [series]="t.placement" />
+          </div>
+          <p class="cr-p2-dossier-h3" style="margin-top: 1rem">Notable recruiters (sample)</p>
+          <p class="cr-p2-tag-row">
+            @for (r of d.notable_recruiters; track r) {
+              <span class="cr-p2-tag">{{ r }}</span>
+            }
+          </p>
+        </section>
+
+        <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="cutoffs">
+          <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Admission cutoff · 5-year trend</h2>
+          <p class="cr-pa-muted">
+            Unit: <strong>{{ cutoffUnit(t.cutoff_metric) }}</strong>
+            @if (t.cutoff_metric === 'air') { — lower AIR = harder seat. }
+          </p>
+          <div class="cr-p2-dossier-charts-stack">
+            <cr-cutoff-trend-chart [series]="t.cutoffs" [metric]="t.cutoff_metric" [label]="t.cutoff_label" [source]="t.cutoff_source" />
+            <cr-cutoff-data-table [series]="t.cutoffs" [metric]="t.cutoff_metric" />
+          </div>
+        </section>
+      }
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="fees">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Fees · scholarships · full-life cost</h2>
+        <p class="cr-p2-cost-hero">₹{{ totalLakhs() }}L <span class="cr-pa-muted">on your profile</span></p>
+        <cr-true-cost-table [lines]="costLines()" [totalLakhs]="totalLakhs()" />
+        @if (affordability(); as a) {
+          <p class="cr-pa-muted">
+            Gap ₹{{ a.funding_gap_lakhs }}L · stress {{ a.stress_level }} · ₹{{ gapMonthly(a.funding_gap_lakhs).toLocaleString('en-IN') }}/mo
+          </p>
+        }
+        <h3 class="cr-p2-dossier-h3">Scholarship paths (check eligibility)</h3>
+        <table class="cr-p2-trend-table">
+          <thead>
+            <tr><th>Scheme</th><th>Who</th><th>Benefit</th></tr>
+          </thead>
+          <tbody>
+            @for (s of d.scholarship_schemes; track s.name) {
+              <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.who }}</td>
+                <td>{{ s.benefit }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="cr-pa-muted" style="margin-top: 0.5rem">{{ d.scholarships }}</p>
+        <div class="cr-p2-card-actions" style="margin-top: 0.75rem">
+          <a routerLink="/app/finance/simulator" [queryParams]="{ college: c.id }" class="cr-pa-btn cr-pa-btn--emerald">Family stress test</a>
+          <a routerLink="/app/money" [queryParams]="{ college: c.id }" class="cr-pa-btn cr-pa-btn--ghost">Money dashboard</a>
+        </div>
+      </section>
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="campus">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Campus · city · facilities</h2>
+        <div class="cr-p2-dossier-campus">
+          <p>{{ d.hostel_life }}</p>
+          <p><strong>City &amp; living</strong> {{ d.city_life }}</p>
+        </div>
+        <ul class="cr-p2-dossier-facilities">
+          @for (f of d.facilities; track f) {
+            <li>{{ f }}</li>
+          }
+        </ul>
+      </section>
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="trust">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Trust &amp; how to verify</h2>
+        <ul class="cr-p2-dossier-trust">
+          @for (note of d.trust_notes; track note) {
+            <li>{{ note }}</li>
+          }
+        </ul>
+      </section>
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="sources">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Official sources (open &amp; verify)</h2>
+        <ul class="cr-p2-dossier-sources">
+          @for (src of d.official_sources; track src.title) {
+            <li class="cr-p2-dossier-sources__row">
+              <a [href]="src.url" target="_blank" rel="noopener noreferrer" class="cr-pa-text-link">{{ src.title }}</a>
+              <span class="cr-pa-muted">Last checked {{ src.last_checked }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="cr-p2-dossier-section cr-p2-dossier-anchor" id="similar">
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Similar colleges (same track)</h2>
+        <p class="cr-pa-muted">Open these dossiers before you leave CampusRoute for another app.</p>
+        <div class="cr-p2-similar-grid">
+          @for (peer of similar(); track peer.id) {
+            <a class="cr-p2-similar-card" [routerLink]="['/app/discover/colleges', peer.id]">
+              <strong>{{ peer.short_name }}</strong>
+              <span>{{ peer.institute_tier }} · NIRF #{{ peer.nirf_rank }}</span>
+              <span>{{ peer.median_placement_lpa }} LPA · {{ peer.primary_entrance }}</span>
+            </a>
+          }
+        </div>
+      </section>
+
+      <footer class="cr-p2-dossier-foot">
+        <button type="button" class="cr-pa-btn cr-pa-btn--outline-emerald" (click)="copyFamilySummary()">
+          {{ copiedFamily() ? 'Copied for family ✓' : 'Copy family summary (WhatsApp)' }}
+        </button>
+        <button type="button" class="cr-pa-btn cr-pa-btn--outline-emerald" (click)="toggleShortlist()">
+          {{ isShortlisted() ? 'Remove from compare' : 'Add to compare' }}
+        </button>
+        <a
+          class="cr-pa-btn cr-pa-btn--emerald"
+          routerLink="/app/discover/compare"
+          [queryParams]="{ ids: facade.compareQueryIds(c.id) }"
+          (click)="ensureComparePick(c.id)"
+        >
+          Compare colleges
+        </a>
+      </footer>
+    </div>
+  }
+} @else {
+  <div class="cr-pa-page cr-p2-empty">
+    <p>College not found.</p>
+    <a routerLink="/app/discover/colleges" class="cr-pa-btn cr-pa-btn--emerald">Back to catalogue</a>
+  </div>
+}

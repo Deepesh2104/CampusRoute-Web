@@ -1,5 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { AUTH_STORAGE_KEY, SESSION_TTL_MS, type AuthSession } from '../domain/auth-session.model';
+import {
+  AUTH_STORAGE_KEY,
+  SESSION_TTL_MS,
+  type AuthSession,
+  type LearnerSignupProfile,
+} from '../domain/auth-session.model';
 
 function readStored(): AuthSession | null {
   if (typeof localStorage === 'undefined') return null;
@@ -36,15 +41,26 @@ export class AuthSessionService {
     this.persist(next);
   }
 
-  signIn(email: string, displayName: string, options?: { emailVerified?: boolean; intent?: string }): void {
+  signIn(
+    email: string,
+    displayName: string,
+    options?: {
+      emailVerified?: boolean;
+      intent?: string;
+      phone?: string;
+      learnerProfile?: LearnerSignupProfile;
+    }
+  ): void {
     const now = Date.now();
     const session: AuthSession = {
       email: email.trim().toLowerCase(),
+      phone: (options?.phone ?? '').replace(/\D/g, '').slice(-10),
       displayName: displayName.trim() || email.split('@')[0] || 'Learner',
       emailVerified: options?.emailVerified ?? true,
       issuedAt: new Date(now).toISOString(),
       expiresAt: new Date(now + SESSION_TTL_MS).toISOString(),
       intent: options?.intent,
+      learnerProfile: options?.learnerProfile,
     };
     this.persist(session);
   }

@@ -133,10 +133,13 @@ export interface RoiResult {
   disclaimer: string;
 }
 
+export type CounsellorAssistantTone = 'default' | 'refusal' | 'uncertain';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   citations: string[];
   created_at: string;
+  assistantTone?: CounsellorAssistantTone;
 }

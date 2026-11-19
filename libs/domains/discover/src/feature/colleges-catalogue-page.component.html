@@ -1,0 +1,138 @@
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <p class="cr-pa-eyebrow">Discover · catalogue</p>
+    <h1 class="cr-pa-page-title-xl">Find colleges that fit your route</h1>
+    <p class="cr-pa-lede">
+      <strong>6 spotlight colleges</strong> below — search name/city or filter to open the full catalogue.
+      Admission chance uses <a routerLink="/app/profile" class="cr-pa-text-link">Profile</a> PCM / JEE.
+    </p>
+  </div>
+
+  <div class="cr-p2-toolbar">
+    <input
+      type="search"
+      class="cr-p2-input"
+      placeholder="Search college or city"
+      [value]="discover.query()"
+      (input)="discover.query.set($any($event.target).value)"
+      data-testid="discover-search"
+    />
+    <input
+      type="text"
+      class="cr-p2-input"
+      placeholder="City filter"
+      [value]="discover.cityFilter()"
+      (input)="discover.cityFilter.set($any($event.target).value)"
+    />
+    <select
+      class="cr-p2-input"
+      [value]="discover.ownershipFilter()"
+      (change)="discover.ownershipFilter.set($any($event.target).value)"
+      data-testid="discover-ownership-filter"
+    >
+      <option value="all">All ownership</option>
+      <option value="Private">Private</option>
+      <option value="Government">Government</option>
+    </select>
+    <input
+      type="text"
+      class="cr-p2-input"
+      placeholder="Program / branch (e.g. CSE)"
+      [value]="discover.programFilter()"
+      (input)="discover.programFilter.set($any($event.target).value)"
+      data-testid="discover-program-filter"
+    />
+    <a
+      class="cr-pa-btn cr-pa-btn--emerald cr-p2-toolbar__cta"
+      routerLink="/app/discover/compare"
+      [queryParams]="discover.comparePicks.ids().length ? { ids: discover.comparePicks.ids().join(',') } : {}"
+      data-testid="discover-compare-cta"
+    >
+      Compare ({{ discover.comparePicks.count() }}/3)
+    </a>
+  </div>
+
+  @if (discover.hiddenBySpotlightCount() > 0) {
+    <p class="cr-p2-catalogue-spotlight-hint" data-testid="catalogue-spotlight-hint">
+      {{ discover.hiddenBySpotlightCount() }} more colleges hidden — type in search (e.g. “RVCE”, “Amrita”) to reveal them.
+    </p>
+  }
+
+  <div class="cr-p2-college-grid">
+    @for (college of discover.gridColleges(); track college.id) {
+      @let chance = admissionChance(college);
+      @let trend = placementTrend(college.id);
+      <article
+        class="cr-p2-college-card-v2"
+        [attr.data-tier]="college.institute_tier"
+        [attr.data-testid]="'catalogue-card-' + college.id"
+      >
+        <header class="cr-p2-college-card-v2__head">
+          <div>
+            <h2 class="cr-p2-college-card-v2__title">{{ college.short_name }}</h2>
+            <p class="cr-p2-college-card-v2__meta">{{ college.city }}</p>
+          </div>
+          <span class="cr-p2-tier-pill">{{ college.institute_tier }}</span>
+        </header>
+
+        <p class="cr-p2-college-card-v2__sub">
+          {{ college.ownership }} · NIRF #{{ college.nirf_rank }}
+        </p>
+
+        @if (trend) {
+          <div class="cr-p2-college-card-v2__spark">
+            <span class="cr-pa-muted">5y median trend</span>
+            <cr-mini-placement-sparkline [series]="trend" />
+            <strong>{{ trend.at(-1)?.median_lpa }} LPA</strong>
+          </div>
+        }
+
+        <div class="cr-p2-admission-teaser">
+          <div class="cr-p2-admission-teaser__left">
+            <span class="cr-pa-muted">Admission chance</span>
+            <strong class="cr-p2-admission-prob" [class]="probClass(chance.headline_pct)">
+              {{ chance.headline_pct }}%
+            </strong>
+          </div>
+          <span class="cr-p2-admission-status" [class]="probClass(chance.headline_pct)">{{ chance.status_label }}</span>
+        </div>
+        <p class="cr-p2-college-card-v2__req">{{ chance.requirements_line }}</p>
+
+        <div class="cr-p2-college-card-v2__stats">
+          <div>
+            <span>Full cost (4y)</span>
+            <strong>₹{{ totalCost(college) }}L</strong>
+          </div>
+          <div>
+            <span>Median pay</span>
+            <strong>{{ college.median_placement_lpa }} LPA</strong>
+          </div>
+        </div>
+
+        @if (reviewLine(college.id); as reviews) {
+          <p class="cr-p2-college-card-v2__reviews">{{ reviews }}</p>
+        }
+
+        <footer class="cr-p2-college-card-v2__foot">
+          <cr-provenance-badge [source]="college.source" [confidence]="college.confidence" />
+          <a
+            class="cr-pa-btn cr-pa-btn--emerald"
+            [routerLink]="['/app/discover/colleges', college.id]"
+            [attr.data-testid]="'view-college-' + college.id"
+          >
+            View college
+          </a>
+          <button
+            type="button"
+            class="cr-pa-btn cr-pa-btn--ghost cr-p2-college-card-v2__compare"
+            [class.cr-pa-btn--outline-emerald]="discover.isComparePick(college.id)"
+            (click)="onComparePick(college.id)"
+            [attr.data-testid]="'compare-pick-' + college.id"
+          >
+            {{ discover.isComparePick(college.id) ? '✓ In compare' : '+ Compare' }}
+          </button>
+        </footer>
+      </article>
+    }
+  </div>
+</div>

@@ -71,6 +71,11 @@ function toSessionEmail(value: string): string {
           <h3>Welcome back</h3>
 
           <p class="sub">Log in to continue your plan.</p>
+          @if (sessionExpired()) {
+            <p class="cr-auth-nt" role="alert" data-testid="auth-session-expired-notice">
+              Your demo session timed out. Log in again to continue.
+            </p>
+          }
 
           <label for="cr-login-id">Email or mobile number</label>
 
@@ -188,7 +193,7 @@ function toSessionEmail(value: string): string {
 
           <p class="cr-auth-sw2">
 
-            <button type="button" class="cr-auth-ro" style="border: 0; width: 100%; justify-content: center" (click)="mode.set('password')">
+            <button type="button" class="cr-auth-link-btn" (click)="mode.set('password')">
 
               Use password instead
 
@@ -250,7 +255,7 @@ function toSessionEmail(value: string): string {
 
               type="button"
 
-              style="background: none; border: 0; color: #5b3fe0; font-weight: 600; cursor: pointer"
+              class="cr-auth-link-btn"
 
               (click)="mode.set('otp')"
 
@@ -287,6 +292,10 @@ export class LoginPageComponent {
 
 
   readonly mode = signal<'password' | 'otp' | 'otp-verify'>('password');
+
+  readonly sessionExpired = signal(
+    this.route.snapshot.queryParamMap.get('reason') === 'session-expired'
+  );
 
   readonly showPassword = signal(false);
 

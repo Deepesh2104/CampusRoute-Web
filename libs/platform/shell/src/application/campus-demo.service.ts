@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { LearnerShortlistStore } from '@campusroute/shared-util';
 import type {
   AffordabilityResult,
   ChatMessage,
@@ -9,10 +10,18 @@ import type {
 } from '../domain/campus-overview.model';
 import { CAMPUS_OVERVIEW_SEED } from '../domain/campus-overview.seed';
 
-const MISCELLANEOUS_LAKHS = 3.8;
+import {
+  COLLEGE_CATALOGUE,
+  runAffordabilityStress,
+  totalCostLakhs as estimateCollegeTrueCost,
+  type CollegeCatalogueRow,
+  type TrueCostOptions,
+} from '@campusroute/shared-models';
 
 @Injectable({ providedIn: 'root' })
 export class CampusDemoService {
+  private readonly shortlist = inject(LearnerShortlistStore);
+
   readonly overview = CAMPUS_OVERVIEW_SEED;
 
   readonly planner = signal<PlannerItem[]>([
@@ -41,35 +50,39 @@ export class CampusDemoService {
     },
   ]);
 
+  readonly catalogueColleges = COLLEGE_CATALOGUE;
+
   collegeById(id: string): College | undefined {
-    return this.overview.colleges.find((c) => c.id === id);
+    const fromSeed = this.overview.colleges.find((c) => c.id === id);
+    if (fromSeed) return fromSeed;
+    const row = COLLEGE_CATALOGUE.find((c) => c.id === id);
+    return row ? catalogueRowToCollege(row) : undefined;
   }
 
-  totalCostLakhs(college: College): number {
-    return Math.round((college.tuition_lakhs + college.hostel_lakhs + MISCELLANEOUS_LAKHS) * 10) / 10;
+  totalCostLakhs(college: College, options?: TrueCostOptions): number {
+    return estimateCollegeTrueCost(college.tuition_lakhs, college.hostel_lakhs, options);
   }
 
   isShortlisted(collegeId: string): boolean {
-    return this.planner().some((p) => p.college_id === collegeId && p.status === 'Shortlisted');
+    return this.shortlist.isShortlisted(collegeId);
   }
 
   shortlistCollege(collegeId: string): void {
+    this.shortlist.toggle(collegeId);
     const list = this.planner();
     const existing = list.find((p) => p.college_id === collegeId);
-    if (existing) {
-      this.planner.set(
-        list.map((p) =>
-          p.college_id === collegeId
-            ? { ...p, status: 'Shortlisted', next_action: 'Check entrance dates' }
-            : p
-        )
-      );
+    if (this.shortlist.isShortlisted(collegeId)) {
+      if (!existing) {
+        this.planner.set([
+          ...list,
+          { college_id: collegeId, status: 'Shortlisted', next_action: 'Check entrance dates' },
+        ]);
+      }
       return;
     }
-    this.planner.set([
-      ...list,
-      { college_id: collegeId, status: 'Shortlisted', next_action: 'Check entrance dates' },
-    ]);
+    if (existing) {
+      this.planner.set(list.filter((p) => p.college_id !== collegeId));
+    }
   }
 
   updatePlannerStatus(collegeId: string, status: PlannerStage, nextAction?: string): void {
@@ -86,30 +99,18 @@ export class CampusDemoService {
     collegeId: string,
     monthlyIncome: number,
     savings: number,
-    existingEmi: number
+    existingEmi: number,
+    costOptions?: TrueCostOptions
   ): AffordabilityResult {
     const college = this.collegeById(collegeId) ?? this.overview.colleges[0];
-    const total = this.totalCostLakhs(college);
-    const fundingGap = Math.max(0, Math.round((total - savings / 100_000) * 10) / 10);
-    const stressScore = Math.min(
-      98,
-      Math.max(8, Math.round((fundingGap / total) * 65 + (existingEmi / monthlyIncome) * 45))
+    return runAffordabilityStress(
+      college.tuition_lakhs,
+      college.hostel_lakhs,
+      monthlyIncome,
+      savings,
+      existingEmi,
+      costOptions
     );
-    let stressLevel = 'Low';
-    if (stressScore > 30) stressLevel = 'Watch';
-    if (stressScore > 60) stressLevel = 'High';
-
-    return {
-      total_cost_lakhs: total,
-      funding_gap_lakhs: fundingGap,
-      stress_score: stressScore,
-      stress_level: stressLevel,
-      monthly_burden_lakhs: Math.round((fundingGap / 4) * 10) / 10,
-      notes: [
-        'A 10% fee increase would add approximately ₹' + (total * 0.1).toFixed(1) + 'L to the four-year plan.',
-        'Scholarships or a lower-cost campus could reduce the gap before borrowing.',
-      ],
-    };
   }
 
   simulateRoi(collegeId: string, loanShare: number): RoiResult {
@@ -152,12 +153,35 @@ export class CampusDemoService {
       content: reply.text,
       citations: reply.citations,
       created_at: new Date().toISOString(),
+      assistantTone: reply.tone,
     };
     this.chatHistory.update((h) => [...h, assistantMsg]);
   }
 
-  private buildCounsellorReply(message: string): { text: string; citations: string[] } {
+  private buildCounsellorReply(
+    message: string
+  ): { text: string; citations: string[]; tone?: ChatMessage['assistantTone'] } {
     const lower = message.toLowerCase();
+    if (
+      /guarantee|100\s*%|sure admission|definitely get|promise.*(job|placement|salary)|approve my loan/i.test(
+        lower
+      )
+    ) {
+      return {
+        tone: 'refusal',
+        text:
+          'I can’t guarantee admissions, scholarships, jobs, salaries, or loan approval. CampusRoute only surfaces **evidence with source and date** so you can decide — nothing here is a promise.',
+        citations: ['MOD-068 safety boundary'],
+      };
+    }
+    if (/maybe|might|not sure|uncertain|predict|what will happen|chances of/i.test(lower)) {
+      return {
+        tone: 'uncertain',
+        text:
+          'That outcome isn’t knowable from this demo dataset alone. I can compare **listed costs and placement signals** with citations — but I’ll flag unknowns instead of guessing.',
+        citations: ['MOD-068 uncertainty template'],
+      };
+    }
     if (lower.includes('vit') && lower.includes('rvce')) {
       return {
         text:
@@ -209,4 +233,24 @@ export class CampusDemoService {
       citations: ['Seeded college comparison rows'],
     };
   }
+}
+
+function catalogueRowToCollege(row: CollegeCatalogueRow): College {
+  return {
+    id: row.id,
+    name: row.name,
+    short_name: row.short_name,
+    city: row.city,
+    accreditation: row.accreditation,
+    tuition_lakhs: row.tuition_lakhs,
+    hostel_lakhs: row.hostel_lakhs,
+    total_placement_lpa: row.median_placement_lpa * 1.08,
+    median_placement_lpa: row.median_placement_lpa,
+    placement_rate: row.placement_rate,
+    seats: 720,
+    admission_routes: row.admission_routes,
+    nirf_rank: row.nirf_rank,
+    source: row.source,
+    confidence: row.confidence,
+  };
 }

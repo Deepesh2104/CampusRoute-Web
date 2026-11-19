@@ -18,16 +18,21 @@ import { toSignal } from '@angular/core/rxjs-interop';
     <div class="cr-auth-route" role="dialog" aria-modal="true" aria-labelledby="cr-auth-heading">
       <div class="cr-auth-aw">
         <aside class="cr-auth-al">
-          <a routerLink="/" class="cr-auth-logo"><i></i>CampusRoute</a>
-          <h2 id="cr-auth-heading">
-            Your route from <span class="cr-auth-grad">decision to career.</span>
-          </h2>
-          <ul>
-            <li>See the true cost before you commit</li>
-            <li>You choose what any college sees</li>
-            <li>Made for school and college students, and their families</li>
-          </ul>
-          <p class="cr-auth-fine">Demo: session is stored on this device until identity API is wired.</p>
+          <div class="cr-auth-al-inner">
+            <a routerLink="/" class="cr-auth-logo">
+              <span class="cr-auth-logo__mark" aria-hidden="true">CR</span>
+              <span class="cr-auth-logo__name">CampusRoute</span>
+            </a>
+            <h2 id="cr-auth-heading">
+              Your route from <span class="cr-auth-grad">decision to career.</span>
+            </h2>
+            <ul class="cr-auth-benefits">
+              <li>See the true cost before you commit</li>
+              <li>You choose what any college sees</li>
+              <li>Made for school and college students, and their families</li>
+            </ul>
+            <p class="cr-auth-fine">Demo: session is stored on this device until identity API is wired.</p>
+          </div>
         </aside>
         <div class="cr-auth-ar">
           <a routerLink="/" class="cr-auth-x" aria-label="Close and go back to the home page">✕</a>

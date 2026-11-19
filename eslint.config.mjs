@@ -20,9 +20,27 @@ export default [
             { sourceTag: 'scope:shared', onlyDependOnLibsWithTags: [] },
             { sourceTag: 'scope:core', onlyDependOnLibsWithTags: ['scope:shared'] },
             { sourceTag: 'scope:marketing', onlyDependOnLibsWithTags: ['scope:shared', 'scope:core'] },
-            { sourceTag: 'scope:domain-discover', onlyDependOnLibsWithTags: ['scope:shared', 'scope:core'] },
-            { sourceTag: 'scope:domain-finance', onlyDependOnLibsWithTags: ['scope:shared', 'scope:core'] },
+            {
+              sourceTag: 'scope:domain-discover',
+              onlyDependOnLibsWithTags: ['scope:shared', 'scope:core', 'type:models'],
+            },
+            {
+              sourceTag: 'scope:domain-finance',
+              onlyDependOnLibsWithTags: ['scope:shared', 'scope:core', 'type:models'],
+            },
             { sourceTag: 'scope:domain-profile', onlyDependOnLibsWithTags: ['scope:shared', 'scope:core'] },
+            {
+              sourceTag: 'scope:domain-admissions',
+              onlyDependOnLibsWithTags: ['scope:shared', 'scope:core', 'type:models'],
+            },
+            {
+              sourceTag: 'scope:domain-documents',
+              onlyDependOnLibsWithTags: ['scope:shared', 'scope:core', 'scope:domain-admissions'],
+            },
+            {
+              sourceTag: 'scope:domain-parent',
+              onlyDependOnLibsWithTags: ['scope:shared', 'scope:core', 'scope:domain-admissions'],
+            },
             { sourceTag: 'scope:platform', onlyDependOnLibsWithTags: ['scope:shared', 'scope:core'] },
           ],
         },

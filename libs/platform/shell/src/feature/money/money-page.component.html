@@ -1,272 +1,254 @@
-<div class="cr-pa-page">
-  <div class="cr-pa-page-hero">
-    <cr-section-eyebrow>Money &amp; ROI · P1</cr-section-eyebrow>
-    <h1 class="cr-pa-page-title-xl">
-      Know the cost<br />
-      <span class="cr-pa-accent-amber">before the commitment.</span>
-    </h1>
-    <p class="cr-pa-lede">
-      A transparent estimate for the four-year journey, then a stress test that uses your family’s numbers — not a
-      generic calculator.
-    </p>
-  </div>
-
-  <section class="cr-pa-grid-12 cr-pa-section">
-    <article class="cr-pa-card cr-pa-span-7" data-testid="true-cost-card">
-      <div class="cr-pa-card__inner">
-        <div class="cr-pa-section__head cr-pa-section__head--stack-sm">
-          <div>
-            <cr-section-eyebrow>True Cost engine</cr-section-eyebrow>
-            <h2 class="cr-pa-section-heading">Itemized four-year estimate</h2>
-          </div>
-          <select
-            class="cr-pa-select"
-            [value]="collegeId()"
-            (change)="onCollegeChange($any($event.target).value)"
-            data-testid="money-college-select"
-          >
-            @for (c of overview.colleges; track c.id) {
-              <option [value]="c.id">{{ c.short_name }}</option>
-            }
-          </select>
-        </div>
-
-        @if (selected(); as c) {
-          <div class="cr-pa-cost-rows cr-pa-cost-rows--spaced">
-            <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId('Tuition & academic fees')">
-              <div>
-                <p class="cr-pa-cost-row__label">Tuition &amp; academic fees</p>
-                <p class="cr-pa-cost-row__meta">{{ c.source }} · {{ c.confidence }} confidence</p>
-              </div>
-              <p class="cr-pa-cost-row__value">{{ formatLakhs(c.tuition_lakhs) }}</p>
-            </div>
-            <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId('Hostel + mess')">
-              <div>
-                <p class="cr-pa-cost-row__label">Hostel + mess</p>
-                <p class="cr-pa-cost-row__meta">2025 campus estimate · Medium confidence</p>
-              </div>
-              <p class="cr-pa-cost-row__value">{{ formatLakhs(c.hostel_lakhs) }}</p>
-            </div>
-            <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId('Books, device & travel')">
-              <div>
-                <p class="cr-pa-cost-row__label">Books, device &amp; travel</p>
-                <p class="cr-pa-cost-row__meta">Planning assumption · Medium confidence</p>
-              </div>
-              <p class="cr-pa-cost-row__value">₹1.8L</p>
-            </div>
-            <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId('Living & personal buffer')">
-              <div>
-                <p class="cr-pa-cost-row__label">Living &amp; personal buffer</p>
-                <p class="cr-pa-cost-row__meta">Conservative estimate · Medium confidence</p>
-              </div>
-              <p class="cr-pa-cost-row__value">₹1.2L</p>
-            </div>
-            <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId('One-time setup buffer')">
-              <div>
-                <p class="cr-pa-cost-row__label">One-time setup buffer</p>
-                <p class="cr-pa-cost-row__meta">Planning assumption · Medium confidence</p>
-              </div>
-              <p class="cr-pa-cost-row__value">₹0.8L</p>
-            </div>
-          </div>
-
-          <div class="cr-pa-cost-total">
-            <div>
-              <p class="cr-pa-cost-total__label">Estimated total</p>
-              <p class="cr-pa-cost-total__value" data-testid="true-cost-total">{{ formatLakhs(preview().total) }}</p>
-            </div>
-            <div class="cr-pa-cost-total__aside">
-              <p class="cr-pa-cost-total__hint">Range can move with</p>
-              <p class="cr-pa-cost-total__warn">rent · travel · fee revisions</p>
-            </div>
-          </div>
-        }
-      </div>
-    </article>
-
-    <article class="cr-pa-card cr-pa-card--dark cr-pa-span-5" data-testid="affordability-simulator-card">
-      <div class="cr-pa-card__inner">
-        <cr-section-eyebrow>Family stress simulator</cr-section-eyebrow>
-        <h2 class="cr-pa-section-heading cr-pa-section-heading--on-dark">What feels safe for you?</h2>
-        <p class="cr-pa-lede cr-pa-lede--on-dark">
-          Change one number at a time. We’ll show the funding gap and pressure signal.
-        </p>
-
-        <div class="cr-pa-slider-stack">
-          <label class="cr-pa-slider-row" data-testid="affordability-income-slider-group">
-            <span class="cr-pa-slider-row__head">
-              <span>Monthly household income</span>
-              <strong data-testid="affordability-income-slider-value">{{ formatInr(income()) }}</strong>
-            </span>
-            <input
-              type="range"
-              min="25000"
-              max="250000"
-              step="5000"
-              [value]="income()"
-              (input)="income.set(+$any($event.target).value)"
-              data-testid="affordability-income-slider"
-            />
-          </label>
-          <label class="cr-pa-slider-row" data-testid="affordability-savings-slider-group">
-            <span class="cr-pa-slider-row__head">
-              <span>Savings pool</span>
-              <strong data-testid="affordability-savings-slider-value">{{ formatSavingsLakhs(savings()) }}</strong>
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="3000000"
-              step="50000"
-              [value]="savings()"
-              (input)="savings.set(+$any($event.target).value)"
-              data-testid="affordability-savings-slider"
-            />
-          </label>
-          <label class="cr-pa-slider-row" data-testid="affordability-emi-slider-group">
-            <span class="cr-pa-slider-row__head">
-              <span>Existing monthly EMIs</span>
-              <strong data-testid="affordability-emi-slider-value">{{ formatInr(emi()) }}</strong>
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="80000"
-              step="2000"
-              [value]="emi()"
-              (input)="emi.set(+$any($event.target).value)"
-              data-testid="affordability-emi-slider"
-            />
-          </label>
-        </div>
-
-        <button
-          type="button"
-          class="cr-pa-btn cr-pa-btn--amber cr-pa-btn--block"
-          (click)="runAffordability()"
-          data-testid="run-affordability-button"
-        >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="4" y="2" width="16" height="20" rx="2" />
-            <path d="M8 6h8M8 10h8M8 14h4" />
-          </svg>
-          Run affordability check
-        </button>
-      </div>
-    </article>
-  </section>
-
-  <section class="cr-pa-grid-12 cr-pa-grid-12--dense">
-    <article class="cr-pa-card cr-pa-span-7" data-testid="affordability-result-card">
-      <div class="cr-pa-card__inner">
-        <div class="cr-pa-section__head">
-          <div>
-            <cr-section-eyebrow>Funding signal</cr-section-eyebrow>
-            <h2 class="cr-pa-section-heading cr-pa-section-heading--md">Your affordability snapshot</h2>
-          </div>
-          <svg class="cr-pa-icon-emerald" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
-          </svg>
-        </div>
-
-        <div class="cr-pa-result-metrics">
-          <div data-testid="funding-gap-value">
-            <p class="cr-pa-result-metrics__value">{{ formatLakhs(displayGap()) }}</p>
-            <p class="cr-pa-result-metrics__label">Funding gap</p>
-          </div>
-          <div data-testid="stress-score-value">
-            <p
-              class="cr-pa-result-metrics__value"
-              [class.cr-pa-result-metrics__value--green]="!isHighStress()"
-              [class.cr-pa-result-metrics__value--amber]="isHighStress()"
-            >
-              {{ displayScore() }}/100
-            </p>
-            <p class="cr-pa-result-metrics__label">Stress score</p>
-          </div>
-          <div data-testid="monthly-pressure-value">
-            <p class="cr-pa-result-metrics__value">{{ formatLakhs(displayMonthlyPressure()) }}</p>
-            <p class="cr-pa-result-metrics__label">Monthly pressure</p>
-          </div>
-        </div>
-
-        <div
-          class="cr-pa-stress-note"
-          [class.cr-pa-stress-note--amber]="isHighStress()"
-          [class.cr-pa-stress-note--emerald]="!isHighStress()"
-          data-testid="stress-level-note"
-        >
-          <p class="cr-pa-stress-note__title">
-            @if (isHighStress()) {
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <path d="M12 9v4M12 17h.01" />
-              </svg>
-            } @else {
-              <svg class="cr-pa-icon-emerald" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <path d="M22 4 12 14.01l-3-3" />
-              </svg>
-            }
-            {{ displayStressLabel() }} pressure signal
-          </p>
-          <p class="cr-pa-stress-note__body">{{ stressNote() }}</p>
-        </div>
-      </div>
-    </article>
-
-    <article class="cr-pa-card cr-pa-span-5" data-testid="roi-simulator-card">
-      <div class="cr-pa-card__inner">
-        <cr-section-eyebrow>ROI lens</cr-section-eyebrow>
-        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">When does it pay back?</h2>
-        <p class="cr-pa-lede cr-pa-lede--compact">
-          A directional view, never a promise. Change how much you expect to fund through a loan.
-        </p>
-
-        <label class="cr-pa-slider-row cr-pa-slider-row--light" data-testid="roi-loan-slider-group">
-          <span class="cr-pa-slider-row__head">
-            <span>Share funded by loan</span>
-            <strong class="cr-pa-slider-row__value--emerald" data-testid="roi-loan-slider-value">{{ loanShare() }}%</strong>
-          </span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="10"
-            [value]="loanShare()"
-            (input)="loanShare.set(+$any($event.target).value)"
-            data-testid="roi-loan-slider"
-          />
-        </label>
-
-        <button type="button" class="cr-pa-btn cr-pa-btn--outline-emerald cr-pa-btn--block" (click)="runRoi()" data-testid="run-roi-button">
-          Calculate indicative ROI
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M13 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        @if (roi(); as r) {
-          <div class="cr-pa-result-metrics cr-pa-result-metrics--pair" data-testid="roi-result-grid">
-            <div data-testid="roi-break-even-value">
-              <p class="cr-pa-result-metrics__value cr-pa-result-metrics__value--green">{{ r.break_even_months }} mo</p>
-              <p class="cr-pa-result-metrics__label">Break-even</p>
-            </div>
-            <div data-testid="roi-multiple-value">
-              <p class="cr-pa-result-metrics__value cr-pa-result-metrics__value--green">{{ r.roi_multiple }}×</p>
-              <p class="cr-pa-result-metrics__label">4y multiple</p>
-            </div>
-          </div>
-          <p class="cr-pa-disclaimer">
-            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            {{ r.disclaimer }}
-          </p>
-        }
-      </div>
-    </article>
-  </section>
-</div>
-
+<div class="cr-pa-page">
+  <div class="cr-pa-page-hero">
+    <cr-section-eyebrow>Money &amp; ROI · P1</cr-section-eyebrow>
+    <h1 class="cr-pa-page-title-xl">
+      Know the cost<br />
+      <span class="cr-pa-accent-amber">before the commitment.</span>
+    </h1>
+    <p class="cr-pa-lede">
+      A transparent estimate for the four-year journey, then a stress test that uses your family’s numbers — not a
+      generic calculator.
+    </p>
+    <div class="cr-p2-hub-links">
+      <a routerLink="/app/finance/simulator" class="cr-pa-btn cr-pa-btn--emerald">Full stress test</a>
+      <a routerLink="/app/finance/roi" class="cr-pa-btn cr-pa-btn--ghost">ROI breakdown</a>
+    </div>
+  </div>
+
+  <section class="cr-pa-grid-12 cr-pa-section">
+    <article class="cr-pa-card cr-pa-span-7" data-testid="true-cost-card">
+      <div class="cr-pa-card__inner">
+        <div class="cr-pa-section__head cr-pa-section__head--stack-sm">
+          <div>
+            <cr-section-eyebrow>True Cost engine</cr-section-eyebrow>
+            <h2 class="cr-pa-section-heading">Itemized four-year estimate</h2>
+          </div>
+          <select
+            class="cr-pa-select"
+            [value]="collegeId()"
+            (change)="onCollegeChange($any($event.target).value)"
+            data-testid="money-college-select"
+          >
+            @for (c of colleges; track c.id) {
+              <option [value]="c.id">{{ c.short_name }}</option>
+            }
+          </select>
+        </div>
+
+        @if (selected(); as c) {
+          <p class="cr-pa-muted" style="margin-bottom: 0.75rem">
+            Full-life four-year cost — tuition plus exams, pocket money, travel and lifestyle (from
+            <a routerLink="/app/profile" class="cr-pa-text-link">your profile</a>).
+          </p>
+          <div class="cr-pa-cost-rows cr-pa-cost-rows--spaced">
+            @for (row of costLines(); track row.id) {
+              <div class="cr-pa-cost-row" [attr.data-testid]="costRowTestId(row.label)">
+                <div>
+                  <p class="cr-pa-cost-row__label">{{ row.label }}</p>
+                  <p class="cr-pa-cost-row__meta">{{ row.meta }}</p>
+                </div>
+                <p class="cr-pa-cost-row__value">{{ formatLakhs(row.lakhs) }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="cr-pa-cost-total">
+            <div>
+              <p class="cr-pa-cost-total__label">Estimated total</p>
+              <p class="cr-pa-cost-total__value" data-testid="true-cost-total">{{ formatLakhs(preview().total) }}</p>
+            </div>
+            <div class="cr-pa-cost-total__aside">
+              <p class="cr-pa-cost-total__hint">Range can move with</p>
+              <p class="cr-pa-cost-total__warn">rent · travel · fee revisions</p>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="cr-pa-card cr-pa-card--dark cr-pa-span-5" data-testid="affordability-simulator-card">
+      <div class="cr-pa-card__inner">
+        <cr-section-eyebrow>Family stress simulator</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--on-dark">What feels safe for you?</h2>
+        <p class="cr-pa-lede cr-pa-lede--on-dark">
+          Change one number at a time. We’ll show the funding gap and pressure signal.
+        </p>
+
+        <div class="cr-pa-slider-stack">
+          <label class="cr-pa-slider-row" data-testid="affordability-income-slider-group">
+            <span class="cr-pa-slider-row__head">
+              <span>Monthly household income</span>
+              <strong data-testid="affordability-income-slider-value">{{ formatInr(income()) }}</strong>
+            </span>
+            <input
+              type="range"
+              min="25000"
+              max="250000"
+              step="5000"
+              [value]="income()"
+              (input)="income.set(+$any($event.target).value); clearAffordability()"
+              data-testid="affordability-income-slider"
+            />
+          </label>
+          <label class="cr-pa-slider-row" data-testid="affordability-savings-slider-group">
+            <span class="cr-pa-slider-row__head">
+              <span>Savings pool</span>
+              <strong data-testid="affordability-savings-slider-value">{{ formatSavingsLakhs(savings()) }}</strong>
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="3000000"
+              step="50000"
+              [value]="savings()"
+              (input)="savings.set(+$any($event.target).value); clearAffordability()"
+              data-testid="affordability-savings-slider"
+            />
+          </label>
+          <label class="cr-pa-slider-row" data-testid="affordability-emi-slider-group">
+            <span class="cr-pa-slider-row__head">
+              <span>Existing monthly EMIs</span>
+              <strong data-testid="affordability-emi-slider-value">{{ formatInr(emi()) }}</strong>
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="80000"
+              step="2000"
+              [value]="emi()"
+              (input)="emi.set(+$any($event.target).value); clearAffordability()"
+              data-testid="affordability-emi-slider"
+            />
+          </label>
+        </div>
+
+        <button
+          type="button"
+          class="cr-pa-btn cr-pa-btn--amber cr-pa-btn--block"
+          (click)="runAffordability()"
+          data-testid="run-affordability-button"
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <path d="M8 6h8M8 10h8M8 14h4" />
+          </svg>
+          Run affordability check
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section class="cr-pa-grid-12 cr-pa-grid-12--dense">
+    @if (affordability(); as a) {
+      <article class="cr-pa-span-7" data-testid="affordability-result-card">
+        <div class="cr-p2-stress-result">
+          <div class="cr-p2-stress-result__top">
+            <div>
+              <p class="cr-pa-eyebrow">Stress score</p>
+              <p
+                class="cr-p2-stress-result__score"
+                [class.cr-p2-stress-result__score--amber]="a.stress_score > 60"
+                data-testid="stress-score-value"
+              >
+                {{ a.stress_score }}
+              </p>
+              <p class="cr-p2-stress-label">{{ a.stress_level }} pressure</p>
+            </div>
+            <div class="cr-p2-stress-gauge" role="img" [attr.aria-label]="'Stress ' + a.stress_score + ' out of 100'">
+              <div class="cr-p2-stress-gauge__track">
+                <div
+                  class="cr-p2-stress-gauge__fill"
+                  [class.cr-p2-stress-gauge__fill--amber]="a.stress_score > 60"
+                  [class.cr-p2-stress-gauge__fill--watch]="a.stress_score > 30 && a.stress_score <= 60"
+                  [style.width.%]="a.stress_score"
+                ></div>
+              </div>
+              <div class="cr-p2-stress-gauge__scale">
+                <span>0</span><span>Low</span><span>Watch</span><span>High</span><span>100</span>
+              </div>
+            </div>
+          </div>
+          <dl class="cr-p2-stress-metrics">
+            <div data-testid="funding-gap-value">
+              <dt>4y cost</dt>
+              <dd>{{ formatLakhs(a.total_cost_lakhs) }}</dd>
+            </div>
+            <div>
+              <dt>Gap</dt>
+              <dd>{{ formatLakhs(a.funding_gap_lakhs) }}</dd>
+            </div>
+            <div data-testid="monthly-pressure-value">
+              <dt>₹/mo plan</dt>
+              <dd>₹{{ gapMonthly(a.funding_gap_lakhs).toLocaleString('en-IN') }}</dd>
+            </div>
+          </dl>
+          <details class="cr-p2-stress-meaning" open data-testid="stress-level-note">
+            <summary>What this means for you</summary>
+            <ul class="cr-p2-notes">
+              @for (line of meaningLines(); track line) {
+                <li>{{ line }}</li>
+              }
+              @for (note of a.notes; track note) {
+                <li class="cr-p2-notes--muted-item">{{ note }}</li>
+              }
+            </ul>
+          </details>
+        </div>
+      </article>
+    }
+
+    <article class="cr-pa-card cr-pa-span-5" data-testid="roi-simulator-card">
+      <div class="cr-pa-card__inner">
+        <cr-section-eyebrow>ROI lens</cr-section-eyebrow>
+        <h2 class="cr-pa-section-heading cr-pa-section-heading--md">When does it pay back?</h2>
+        <p class="cr-pa-lede cr-pa-lede--compact">
+          A directional view, never a promise. Change how much you expect to fund through a loan.
+        </p>
+
+        <label class="cr-pa-slider-row cr-pa-slider-row--light" data-testid="roi-loan-slider-group">
+          <span class="cr-pa-slider-row__head">
+            <span>Share funded by loan</span>
+            <strong class="cr-pa-slider-row__value--emerald" data-testid="roi-loan-slider-value">{{ loanShare() }}%</strong>
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="10"
+            [value]="loanShare()"
+            (input)="loanShare.set(+$any($event.target).value)"
+            data-testid="roi-loan-slider"
+          />
+        </label>
+
+        <button type="button" class="cr-pa-btn cr-pa-btn--outline-emerald cr-pa-btn--block" (click)="runRoi()" data-testid="run-roi-button">
+          Calculate indicative ROI
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        @if (roi(); as r) {
+          <div class="cr-pa-result-metrics cr-pa-result-metrics--pair" data-testid="roi-result-grid">
+            <div data-testid="roi-break-even-value">
+              <p class="cr-pa-result-metrics__value cr-pa-result-metrics__value--green">{{ r.break_even_months }} mo</p>
+              <p class="cr-pa-result-metrics__label">Break-even</p>
+            </div>
+            <div data-testid="roi-multiple-value">
+              <p class="cr-pa-result-metrics__value cr-pa-result-metrics__value--green">{{ r.roi_multiple }}×</p>
+              <p class="cr-pa-result-metrics__label">4y multiple</p>
+            </div>
+          </div>
+          <p class="cr-pa-disclaimer">
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            {{ r.disclaimer }}
+          </p>
+        }
+      </div>
+    </article>
+  </section>
+</div>
+

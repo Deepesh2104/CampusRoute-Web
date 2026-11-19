@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ClientAuditService } from '@campusroute/shared-util';
 import {
   CONSENT_SETTINGS,
+  CONSENT_RECEIPTS_STORAGE_KEY,
   CONSENT_STORAGE_KEY,
   type ConsentReceipt,
   type ConsentScopeId,
@@ -24,12 +25,23 @@ function readConsent(): Record<ConsentScopeId, boolean> {
   }
 }
 
+function readReceipts(): ConsentReceipt[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(CONSENT_RECEIPTS_STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as ConsentReceipt[];
+  } catch {
+    return [];
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConsentStoreService {
   private readonly audit = inject(ClientAuditService);
 
   private readonly values = signal<Record<ConsentScopeId, boolean>>(readConsent());
-  private readonly receiptsSignal = signal<ConsentReceipt[]>([]);
+  private readonly receiptsSignal = signal<ConsentReceipt[]>(readReceipts());
 
   readonly settings = CONSENT_SETTINGS;
   readonly consent = this.values.asReadonly();
@@ -54,7 +66,11 @@ export class ConsentStoreService {
       scope,
       at: new Date().toISOString(),
     };
-    this.receiptsSignal.update((r) => [receipt, ...r].slice(0, 20));
+    this.receiptsSignal.update((r) => {
+      const next = [receipt, ...r].slice(0, 20);
+      localStorage.setItem(CONSENT_RECEIPTS_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
   }
 
   scopesForShare(extra: string[]): string[] {

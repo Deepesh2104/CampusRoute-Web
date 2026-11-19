@@ -14,6 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { ClientAuditService, DemoWaitlistService } from '@campusroute/shared-util';
 import { initLandingPageRuntime } from './landing-page.runtime';
 
 @Component({
@@ -30,6 +31,8 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly waitlist = inject(DemoWaitlistService);
+  private readonly audit = inject(ClientAuditService);
   private teardown?: () => void;
   private authMovedToBody = false;
 
@@ -61,6 +64,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('[landing] legacy init failed', err);
       }
       this.syncAuthBodyClass();
+      this.wireDemoWaitlistForm();
       this.snapHeroToTop();
     });
 
@@ -86,6 +90,29 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly onHashChange = (): void => {
     queueMicrotask(() => this.syncAuthBodyClass());
   };
+
+  /** Demo early-access list (localStorage) — replaces legacy “nothing stored” copy. */
+  private wireDemoWaitlistForm(): void {
+    const form = document.getElementById('f') as HTMLFormElement | null;
+    const em = document.getElementById('em') as HTMLInputElement | null;
+    const msg = document.getElementById('msg');
+    if (!form || !em || !msg) return;
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const email = em.value.trim();
+      if (!this.waitlist.add(email)) {
+        msg.className = 'msg er';
+        msg.textContent = 'Enter a valid email, like name@example.com.';
+        return;
+      }
+      this.audit.log('waitlist.join.demo-saved', { scope: 'identity' });
+      msg.className = 'msg ok';
+      msg.textContent =
+        'Thanks — saved on this device’s demo waitlist. We’ll wire the API when M1 backend ships.';
+      em.value = '';
+    };
+  }
 
   private syncAuthBodyClass(): void {
     const open =

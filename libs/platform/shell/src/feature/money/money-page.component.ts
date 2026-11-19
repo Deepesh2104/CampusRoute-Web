@@ -1,7 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
+import {
+  buildStressMeaningLines,
+  COLLEGE_CATALOGUE,
+  estimateTrueCostBreakdown,
+  gapCoverMonthlyInr,
+  sumTrueCostLakhs,
+  trueCostLines,
+  type AffordabilityStressResult,
+  type TrueCostOptions,
+} from '@campusroute/shared-models';
+import { readLearnerProfileDraft } from '@campusroute/shared-util';
 import { CampusDemoService } from '../../application/campus-demo.service';
 import type { AffordabilityResult, RoiResult } from '../../domain/campus-overview.model';
 import { formatLakhs } from '../../domain/format-money';
@@ -9,7 +20,7 @@ import { SectionEyebrowComponent } from '../../ui/section-eyebrow/section-eyebro
 
 @Component({
   selector: 'cr-money-page',
-  imports: [SectionEyebrowComponent],
+  imports: [RouterLink, SectionEyebrowComponent],
   templateUrl: './money-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -18,6 +29,7 @@ export class MoneyPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly overview = this.campus.overview;
+  readonly colleges = this.campus.catalogueColleges;
   readonly collegeId = signal('vit-vellore');
 
   readonly income = signal(115_000);
@@ -38,11 +50,28 @@ export class MoneyPageComponent {
     if (q) this.collegeId.set(q);
   }
 
-  readonly selected = computed(() => this.campus.collegeById(this.collegeId()) ?? this.overview.colleges[0]);
+  readonly selected = computed(
+    () => this.campus.collegeById(this.collegeId()) ?? this.campus.collegeById(this.colleges[0]?.id ?? 'vit-vellore')
+  );
+
+  readonly costOptions = computed((): TrueCostOptions => {
+    const d = readLearnerProfileDraft();
+    return {
+      pocketMoneyMonthlyInr: d?.pocketMoneyMonthlyInr ?? 5_000,
+      lifestyleBand: d?.lifestyleBand ?? 'typical',
+    };
+  });
+
+  readonly costLines = computed(() => {
+    const c = this.selected();
+    if (!c) return [];
+    const breakdown = estimateTrueCostBreakdown(c.tuition_lakhs, c.hostel_lakhs, this.costOptions());
+    return trueCostLines(breakdown, c.source, c.confidence);
+  });
 
   readonly preview = computed(() => {
     const c = this.selected();
-    const total = c ? this.campus.totalCostLakhs(c) : 21.7;
+    const total = c ? this.campus.totalCostLakhs(c, this.costOptions()) : sumTrueCostLakhs(estimateTrueCostBreakdown(14.8, 3.1));
     const gap = Math.max(0, Math.round((total - this.savings() / 100_000) * 10) / 10);
     const score = Math.min(
       98,
@@ -51,30 +80,28 @@ export class MoneyPageComponent {
     return { total, gap, score };
   });
 
-  readonly displayScore = computed(() => this.affordability()?.stress_score ?? this.preview().score);
-
-  readonly displayGap = computed(() => this.affordability()?.funding_gap_lakhs ?? this.preview().gap);
-
-  readonly displayMonthlyPressure = computed(
-    () => this.affordability()?.monthly_burden_lakhs ?? this.preview().gap / 4
-  );
-
-  readonly displayStressLabel = computed(() => {
+  readonly meaningLines = computed(() => {
     const a = this.affordability();
-    if (a) return a.stress_level;
-    const s = this.preview().score;
-    if (s > 60) return 'High';
-    if (s > 30) return 'Watch';
-    return 'Low';
+    const c = this.selected();
+    if (!a || !c) return [];
+    const catalogue = COLLEGE_CATALOGUE.find((row) => row.id === c.id);
+    return buildStressMeaningLines({
+      campusName: c.short_name,
+      medianLpa: c.median_placement_lpa,
+      placementRate: c.placement_rate,
+      placementMethodology: catalogue?.placement_methodology ?? 'Verify branch placement notes with the institute.',
+      totalCostLakhs: a.total_cost_lakhs,
+      fundingGapLakhs: a.funding_gap_lakhs,
+      stressLevel: a.stress_level as AffordabilityStressResult['stress_level'],
+    });
   });
 
-  readonly isHighStress = computed(() => this.displayScore() > 60);
+  gapMonthly = gapCoverMonthlyInr;
 
-  readonly stressNote = computed(
-    () =>
-      this.affordability()?.notes[0] ??
-      'Run the check to see personalized sensitivity notes based on this family profile.'
-  );
+  clearAffordability(): void {
+    this.affordability.set(null);
+    this.roi.set(null);
+  }
 
   formatLakhs = formatLakhs;
 
@@ -98,7 +125,13 @@ export class MoneyPageComponent {
 
   runAffordability(): void {
     this.affordability.set(
-      this.campus.simulateAffordability(this.collegeId(), this.income(), this.savings(), this.emi())
+      this.campus.simulateAffordability(
+        this.collegeId(),
+        this.income(),
+        this.savings(),
+        this.emi(),
+        this.costOptions()
+      )
     );
   }
 

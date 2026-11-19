@@ -27,6 +27,9 @@
       "@campusroute/domains-discover": ["libs/domains/discover/src/index.ts"],
       "@campusroute/domains-finance": ["libs/domains/finance/src/index.ts"],
       "@campusroute/domains-profile": ["libs/domains/profile/src/index.ts"],
+      "@campusroute/domains-admissions": ["libs/domains/admissions/src/index.ts"],
+      "@campusroute/domains-documents": ["libs/domains/documents/src/index.ts"],
+      "@campusroute/domains-parent": ["libs/domains/parent/src/index.ts"],
       "@campusroute/platform-shell": ["libs/platform/shell/src/index.ts"]
     }
   },

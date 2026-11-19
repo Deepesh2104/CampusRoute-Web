@@ -21,3 +21,4 @@ export const CONSENT_SETTINGS: ConsentSetting[] = [
 ];
 
 export const CONSENT_STORAGE_KEY = 'campusroute.consent.v1';
+export const CONSENT_RECEIPTS_STORAGE_KEY = 'campusroute.consent.receipts.v1';
