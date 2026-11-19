@@ -1,0 +1,58 @@
+.cr-mkt-doc {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+  min-height: 100dvh;
+  background: #faf9f5;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  &__brand {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #047857;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  &__eyebrow {
+    margin: 0 0 1.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #64748b;
+  }
+
+  &__body {
+    display: grid;
+    gap: 1rem;
+    line-height: 1.55;
+    font-size: 0.9375rem;
+    color: #334155;
+
+    details {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      background: #fff;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #0f172a;
+    }
+  }
+}
+
+.cr-mkt-trust-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
